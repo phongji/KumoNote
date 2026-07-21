@@ -104,4 +104,26 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moveToTrash => 'Move to trash';
+
+  @override
+  String get trashEmptyTitle => 'Trash is empty';
+
+  @override
+  String get trashEmptyBody => 'Notebooks moved here can be restored.';
+
+  @override
+  String get restore => 'Restore';
+
+  @override
+  String get deleteForever => 'Delete forever';
+
+  @override
+  String get deleteForeverTitle => 'Delete this notebook forever?';
+
+  @override
+  String get deleteForeverBody =>
+      'This cannot be undone. The notebook and its contents will be permanently removed.';
+
+  @override
+  String get notebookRestored => 'Notebook restored';
 }

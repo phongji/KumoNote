@@ -31,5 +31,12 @@
   "favorite": "เพิ่มในรายการโปรด",
   "removeFavorite": "นำออกจากรายการโปรด",
   "rename": "เปลี่ยนชื่อ",
-  "moveToTrash": "ย้ายไปถังขยะ"
+  "moveToTrash": "ย้ายไปถังขยะ",
+  "trashEmptyTitle": "ถังขยะว่างอยู่",
+  "trashEmptyBody": "สมุดที่ย้ายมาที่นี่สามารถกู้คืนได้",
+  "restore": "กู้คืน",
+  "deleteForever": "ลบถาวร",
+  "deleteForeverTitle": "ลบสมุดนี้ถาวรหรือไม่",
+  "deleteForeverBody": "การลบนี้ย้อนกลับไม่ได้ สมุดและเนื้อหาทั้งหมดจะถูกนำออกถาวร",
+  "notebookRestored": "กู้คืนสมุดแล้ว"
 }

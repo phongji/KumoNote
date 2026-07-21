@@ -103,4 +103,26 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get moveToTrash => 'ย้ายไปถังขยะ';
+
+  @override
+  String get trashEmptyTitle => 'ถังขยะว่างอยู่';
+
+  @override
+  String get trashEmptyBody => 'สมุดที่ย้ายมาที่นี่สามารถกู้คืนได้';
+
+  @override
+  String get restore => 'กู้คืน';
+
+  @override
+  String get deleteForever => 'ลบถาวร';
+
+  @override
+  String get deleteForeverTitle => 'ลบสมุดนี้ถาวรหรือไม่';
+
+  @override
+  String get deleteForeverBody =>
+      'การลบนี้ย้อนกลับไม่ได้ สมุดและเนื้อหาทั้งหมดจะถูกนำออกถาวร';
+
+  @override
+  String get notebookRestored => 'กู้คืนสมุดแล้ว';
 }

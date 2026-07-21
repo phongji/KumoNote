@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kumo_note/features/library/application/providers/library_providers.dart';
 import 'package:kumo_note/features/library/domain/entities/notebook.dart';
+import 'package:kumo_note/features/library/presentation/widgets/notebook_card.dart';
+import 'package:kumo_note/features/library/presentation/trash_screen.dart';
 import 'package:kumo_note/l10n/app_localizations.dart';
 
 class LibraryScreen extends ConsumerWidget {
@@ -31,6 +33,30 @@ class LibraryScreen extends ConsumerWidget {
                     context: context,
                     ref: ref,
                     strings: strings,
+                  );
+                },
+                onRenameNotebook: (notebook) {
+                  _showRenameNotebookDialog(
+                    context: context,
+                    ref: ref,
+                    strings: strings,
+                    notebook: notebook,
+                  );
+                },
+                onToggleFavorite: (notebook) {
+                  _toggleFavorite(
+                    context: context,
+                    ref: ref,
+                    strings: strings,
+                    notebook: notebook,
+                  );
+                },
+                onMoveToTrash: (notebook) {
+                  _confirmMoveToTrash(
+                    context: context,
+                    ref: ref,
+                    strings: strings,
+                    notebook: notebook,
                   );
                 },
                 onRetry: () {
@@ -77,7 +103,7 @@ class LibraryScreen extends ConsumerWidget {
     required AppLocalizations strings,
   }) async {
     final formKey = GlobalKey<FormState>();
-    final titleController = TextEditingController();
+    var notebookTitle = '';
 
     final title = await showDialog<String>(
       context: context,
@@ -87,13 +113,15 @@ class LibraryScreen extends ConsumerWidget {
           content: Form(
             key: formKey,
             child: TextFormField(
-              controller: titleController,
               autofocus: true,
               textInputAction: TextInputAction.done,
               decoration: InputDecoration(
                 labelText: strings.notebookNameLabel,
                 hintText: strings.notebookNameHint,
               ),
+              onChanged: (value) {
+                notebookTitle = value;
+              },
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return strings.notebookNameLabel;
@@ -102,7 +130,7 @@ class LibraryScreen extends ConsumerWidget {
               },
               onFieldSubmitted: (_) {
                 if (formKey.currentState!.validate()) {
-                  Navigator.of(dialogContext).pop(titleController.text.trim());
+                  Navigator.of(dialogContext).pop(notebookTitle.trim());
                 }
               },
             ),
@@ -117,7 +145,7 @@ class LibraryScreen extends ConsumerWidget {
             FilledButton(
               onPressed: () {
                 if (formKey.currentState!.validate()) {
-                  Navigator.of(dialogContext).pop(titleController.text.trim());
+                  Navigator.of(dialogContext).pop(notebookTitle.trim());
                 }
               },
               child: Text(strings.create),
@@ -126,7 +154,6 @@ class LibraryScreen extends ConsumerWidget {
         );
       },
     );
-
 
     if (title == null || !context.mounted) {
       return;
@@ -138,26 +165,169 @@ class LibraryScreen extends ConsumerWidget {
       return;
     }
 
-    final result = ref.read(notebookListProvider);
-
-    if (result.hasError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(strings.libraryErrorBody),
-          action: SnackBarAction(
-            label: strings.tryAgain,
-            onPressed: () {
-              ref.read(notebookListProvider.notifier).createNotebook(title);
-            },
-          ),
-        ),
-      );
+    if (_showErrorIfNeeded(context, ref, strings)) {
       return;
     }
 
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(strings.notebookCreated)));
+  }
+
+  Future<void> _showRenameNotebookDialog({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations strings,
+    required Notebook notebook,
+  }) async {
+    final formKey = GlobalKey<FormState>();
+    var notebookTitle = notebook.title;
+
+    final newTitle = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(strings.rename),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              initialValue: notebook.title,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(labelText: strings.notebookNameLabel),
+              onChanged: (value) {
+                notebookTitle = value;
+              },
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return strings.notebookNameLabel;
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop(notebookTitle.trim());
+                }
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop(notebookTitle.trim());
+                }
+              },
+              child: Text(strings.rename),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (newTitle == null || !context.mounted) {
+      return;
+    }
+
+    await ref
+        .read(notebookListProvider.notifier)
+        .renameNotebook(notebookId: notebook.id, newTitle: newTitle);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    _showErrorIfNeeded(context, ref, strings);
+  }
+
+  Future<void> _toggleFavorite({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations strings,
+    required Notebook notebook,
+  }) async {
+    await ref.read(notebookListProvider.notifier).toggleFavorite(notebook.id);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    _showErrorIfNeeded(context, ref, strings);
+  }
+
+  Future<void> _confirmMoveToTrash({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations strings,
+    required Notebook notebook,
+  }) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(strings.moveToTrash),
+          content: Text(notebook.title),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: Text(strings.moveToTrash),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) {
+      return;
+    }
+
+    await ref.read(notebookListProvider.notifier).moveToTrash(notebook.id);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    _showErrorIfNeeded(context, ref, strings);
+  }
+
+  bool _showErrorIfNeeded(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations strings,
+  ) {
+    final result = ref.read(notebookListProvider);
+
+    if (!result.hasError) {
+      return false;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(strings.libraryErrorBody),
+        action: SnackBarAction(
+          label: strings.tryAgain,
+          onPressed: () {
+            ref.read(notebookListProvider.notifier).reload();
+          },
+        ),
+      ),
+    );
+
+    return true;
   }
 }
 
@@ -170,6 +340,13 @@ class _LibraryNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NavigationRail(
+      onDestinationSelected: (index) {
+        if (index == 4) {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (context) => const TrashScreen()),
+          );
+        }
+      },
       selectedIndex: 0,
       extended: extended,
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -218,12 +395,18 @@ class _LibraryContent extends StatelessWidget {
     required this.strings,
     required this.notebooks,
     required this.onCreateNotebook,
+    required this.onRenameNotebook,
+    required this.onToggleFavorite,
+    required this.onMoveToTrash,
     required this.onRetry,
   });
 
   final AppLocalizations strings;
   final AsyncValue<List<Notebook>> notebooks;
   final VoidCallback onCreateNotebook;
+  final ValueChanged<Notebook> onRenameNotebook;
+  final ValueChanged<Notebook> onToggleFavorite;
+  final ValueChanged<Notebook> onMoveToTrash;
   final VoidCallback onRetry;
 
   @override
@@ -309,7 +492,13 @@ class _LibraryContent extends StatelessWidget {
                 if (items.isEmpty) {
                   return _EmptyLibrary(strings: strings);
                 }
-                return _NotebookGrid(notebooks: items);
+
+                return _NotebookGrid(
+                  notebooks: items,
+                  onRenameNotebook: onRenameNotebook,
+                  onToggleFavorite: onToggleFavorite,
+                  onMoveToTrash: onMoveToTrash,
+                );
               },
               loading: () {
                 return _LoadingLibrary(strings: strings);
@@ -359,9 +548,17 @@ class _QuickActions extends StatelessWidget {
 }
 
 class _NotebookGrid extends StatelessWidget {
-  const _NotebookGrid({required this.notebooks});
+  const _NotebookGrid({
+    required this.notebooks,
+    required this.onRenameNotebook,
+    required this.onToggleFavorite,
+    required this.onMoveToTrash,
+  });
 
   final List<Notebook> notebooks;
+  final ValueChanged<Notebook> onRenameNotebook;
+  final ValueChanged<Notebook> onToggleFavorite;
+  final ValueChanged<Notebook> onMoveToTrash;
 
   @override
   Widget build(BuildContext context) {
@@ -385,74 +582,23 @@ class _NotebookGrid extends StatelessWidget {
             childAspectRatio: 0.82,
           ),
           itemBuilder: (context, index) {
-            return _NotebookCard(notebook: notebooks[index]);
+            final notebook = notebooks[index];
+
+            return NotebookCard(
+              notebook: notebook,
+              onRename: () {
+                onRenameNotebook(notebook);
+              },
+              onToggleFavorite: () {
+                onToggleFavorite(notebook);
+              },
+              onMoveToTrash: () {
+                onMoveToTrash(notebook);
+              },
+            );
           },
         );
       },
-    );
-  }
-}
-
-class _NotebookCard extends StatelessWidget {
-  const _NotebookCard({required this.notebook});
-
-  final Notebook notebook;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final coverColor = Color(notebook.coverColorValue);
-
-    return Material(
-      color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(22),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {},
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: coverColor,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Center(
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      color: Colors.white,
-                      size: 42,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 14),
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      notebook.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleLarge,
-                    ),
-                  ),
-                  if (notebook.isFavorite)
-                    Icon(
-                      Icons.star_rounded,
-                      size: 20,
-                      color: theme.colorScheme.primary,
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

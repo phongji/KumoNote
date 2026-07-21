@@ -289,6 +289,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move to trash'**
   String get moveToTrash;
+
+  /// No description provided for @trashEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Trash is empty'**
+  String get trashEmptyTitle;
+
+  /// No description provided for @trashEmptyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebooks moved here can be restored.'**
+  String get trashEmptyBody;
+
+  /// No description provided for @restore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get restore;
+
+  /// No description provided for @deleteForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete forever'**
+  String get deleteForever;
+
+  /// No description provided for @deleteForeverTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this notebook forever?'**
+  String get deleteForeverTitle;
+
+  /// No description provided for @deleteForeverBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This cannot be undone. The notebook and its contents will be permanently removed.'**
+  String get deleteForeverBody;
+
+  /// No description provided for @notebookRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook restored'**
+  String get notebookRestored;
 }
 
 class _AppLocalizationsDelegate

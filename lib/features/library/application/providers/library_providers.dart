@@ -18,6 +18,10 @@ final createNotebookProvider = Provider<CreateNotebook>((ref) {
   return CreateNotebook(repository: ref.watch(notebookRepositoryProvider));
 });
 
+final deletedNotebookListProvider = FutureProvider<List<Notebook>>((ref) {
+  return ref.watch(notebookRepositoryProvider).getDeletedNotebooks();
+});
+
 final notebookListProvider =
     AsyncNotifierProvider<NotebookListController, List<Notebook>>(
       NotebookListController.new,
@@ -80,6 +84,30 @@ final class NotebookListController extends AsyncNotifier<List<Notebook>> {
       final deletedNotebook = notebook.moveToTrash(now: DateTime.now());
 
       await _repository.save(deletedNotebook);
+      ref.invalidate(deletedNotebookListProvider);
+      return _repository.getActiveNotebooks();
+    });
+  }
+
+  Future<void> restoreNotebook(String notebookId) async {
+    state = const AsyncLoading();
+
+    state = await AsyncValue.guard(() async {
+      final notebook = await _requireNotebook(notebookId);
+      final restoredNotebook = notebook.restore(now: DateTime.now());
+
+      await _repository.save(restoredNotebook);
+      ref.invalidate(deletedNotebookListProvider);
+      return _repository.getActiveNotebooks();
+    });
+  }
+
+  Future<void> purgeNotebook(String notebookId) async {
+    state = const AsyncLoading();
+
+    state = await AsyncValue.guard(() async {
+      await _repository.purge(notebookId);
+      ref.invalidate(deletedNotebookListProvider);
       return _repository.getActiveNotebooks();
     });
   }

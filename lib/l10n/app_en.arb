@@ -31,5 +31,12 @@
   "favorite": "Add to favorites",
   "removeFavorite": "Remove from favorites",
   "rename": "Rename",
-  "moveToTrash": "Move to trash"
+  "moveToTrash": "Move to trash",
+  "trashEmptyTitle": "Trash is empty",
+  "trashEmptyBody": "Notebooks moved here can be restored.",
+  "restore": "Restore",
+  "deleteForever": "Delete forever",
+  "deleteForeverTitle": "Delete this notebook forever?",
+  "deleteForeverBody": "This cannot be undone. The notebook and its contents will be permanently removed.",
+  "notebookRestored": "Notebook restored"
 }
