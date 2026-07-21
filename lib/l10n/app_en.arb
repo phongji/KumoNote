@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "appName": "Kumo Notes",
+  "library": "Library",
+  "welcomeBack": "Welcome back",
+  "captureThought": "Capture a thought",
+  "newNotebook": "New notebook",
+  "quickNote": "Quick note",
+  "recent": "Recent",
+  "favorites": "Favorites",
+  "folders": "Folders",
+  "allNotebooks": "All notebooks",
+  "trash": "Trash",
+  "search": "Search",
+  "settings": "Settings",
+  "emptyLibraryTitle": "Your space is ready",
+  "emptyLibraryBody": "Create a notebook and begin with one thought.",
+  "saved": "Saved"
+}

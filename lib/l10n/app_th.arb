@@ -1,0 +1,19 @@
+{
+  "@@locale": "th",
+  "appName": "Kumo Notes",
+  "library": "คลังสมุด",
+  "welcomeBack": "ยินดีต้อนรับกลับมา",
+  "captureThought": "บันทึกความคิด",
+  "newNotebook": "สร้างสมุดใหม่",
+  "quickNote": "จดทันที",
+  "recent": "ล่าสุด",
+  "favorites": "รายการโปรด",
+  "folders": "โฟลเดอร์",
+  "allNotebooks": "สมุดทั้งหมด",
+  "trash": "ถังขยะ",
+  "search": "ค้นหา",
+  "settings": "การตั้งค่า",
+  "emptyLibraryTitle": "พื้นที่ของคุณพร้อมแล้ว",
+  "emptyLibraryBody": "สร้างสมุด แล้วเริ่มต้นจากหนึ่งความคิด",
+  "saved": "บันทึกแล้ว"
+}
