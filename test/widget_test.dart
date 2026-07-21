@@ -5,11 +5,7 @@ import 'package:kumo_note/app/kumo_app.dart';
 
 void main() {
   testWidgets('Kumo Notes opens the library', (tester) async {
-    await tester.pumpWidget(
-      const ProviderScope(
-        child: KumoApp(),
-      ),
-    );
+    await tester.pumpWidget(const ProviderScope(child: KumoApp()));
 
     await tester.pumpAndSettle();
 
