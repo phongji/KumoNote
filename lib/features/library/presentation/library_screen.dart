@@ -1,3 +1,4 @@
+import 'package:kumo_note/features/page/presentation/screens/notebook_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kumo_note/features/library/application/providers/library_providers.dart';
@@ -586,6 +587,18 @@ class _NotebookGrid extends StatelessWidget {
 
             return NotebookCard(
               notebook: notebook,
+              onOpen: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) {
+                      return NotebookScreen(
+                        notebookId: notebook.id,
+                        notebookName: notebook.title,
+                      );
+                    },
+                  ),
+                );
+              },
               onRename: () {
                 onRenameNotebook(notebook);
               },

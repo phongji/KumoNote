@@ -1,5 +1,6 @@
 enum PersistenceKey {
   notebooks,
+  pages,
   folders,
   settings,
   lastSession,
@@ -9,7 +10,10 @@ enum PersistenceKey {
 abstract interface class KeyValueStore {
   Future<String?> readString(PersistenceKey key);
 
-  Future<void> writeString(PersistenceKey key, String value);
+  Future<void> writeString(
+    PersistenceKey key,
+    String value,
+  );
 
   Future<void> remove(PersistenceKey key);
 
