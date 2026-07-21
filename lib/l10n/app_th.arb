@@ -15,5 +15,21 @@
   "settings": "การตั้งค่า",
   "emptyLibraryTitle": "พื้นที่ของคุณพร้อมแล้ว",
   "emptyLibraryBody": "สร้างสมุด แล้วเริ่มต้นจากหนึ่งความคิด",
-  "saved": "บันทึกแล้ว"
+  "saved": "บันทึกแล้ว",
+  "newNotebookTitle": "สร้างสมุดใหม่",
+  "notebookNameLabel": "ชื่อสมุด",
+  "notebookNameHint": "เช่น บันทึกการประชุม",
+  "create": "สร้าง",
+  "cancel": "ยกเลิก",
+  "untitledNotebook": "สมุดไม่มีชื่อ",
+  "loadingNotebooks": "กำลังเปิดคลังสมุด…",
+  "libraryErrorTitle": "เปิดคลังสมุดไม่ได้",
+  "libraryErrorBody": "โน้ตของคุณยังปลอดภัย กรุณาลองอีกครั้ง",
+  "tryAgain": "ลองอีกครั้ง",
+  "notebookCreated": "สร้างสมุดแล้ว",
+  "moreActions": "ตัวเลือกเพิ่มเติม",
+  "favorite": "เพิ่มในรายการโปรด",
+  "removeFavorite": "นำออกจากรายการโปรด",
+  "rename": "เปลี่ยนชื่อ",
+  "moveToTrash": "ย้ายไปถังขยะ"
 }

@@ -193,6 +193,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Saved'**
   String get saved;
+
+  /// No description provided for @newNotebookTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a notebook'**
+  String get newNotebookTitle;
+
+  /// No description provided for @notebookNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook name'**
+  String get notebookNameLabel;
+
+  /// No description provided for @notebookNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example, Meeting notes'**
+  String get notebookNameHint;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @untitledNotebook.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled notebook'**
+  String get untitledNotebook;
+
+  /// No description provided for @loadingNotebooks.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening your library…'**
+  String get loadingNotebooks;
+
+  /// No description provided for @libraryErrorTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your library could not be opened'**
+  String get libraryErrorTitle;
+
+  /// No description provided for @libraryErrorBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your notes are safe. Please try again.'**
+  String get libraryErrorBody;
+
+  /// No description provided for @tryAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get tryAgain;
+
+  /// No description provided for @notebookCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Notebook created'**
+  String get notebookCreated;
+
+  /// No description provided for @moreActions.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get moreActions;
+
+  /// No description provided for @favorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to favorites'**
+  String get favorite;
+
+  /// No description provided for @removeFavorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from favorites'**
+  String get removeFavorite;
+
+  /// No description provided for @rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
+  /// No description provided for @moveToTrash.
+  ///
+  /// In en, this message translates to:
+  /// **'Move to trash'**
+  String get moveToTrash;
 }
 
 class _AppLocalizationsDelegate

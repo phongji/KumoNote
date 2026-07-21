@@ -56,4 +56,52 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saved => 'Saved';
+
+  @override
+  String get newNotebookTitle => 'Create a notebook';
+
+  @override
+  String get notebookNameLabel => 'Notebook name';
+
+  @override
+  String get notebookNameHint => 'For example, Meeting notes';
+
+  @override
+  String get create => 'Create';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get untitledNotebook => 'Untitled notebook';
+
+  @override
+  String get loadingNotebooks => 'Opening your library…';
+
+  @override
+  String get libraryErrorTitle => 'Your library could not be opened';
+
+  @override
+  String get libraryErrorBody => 'Your notes are safe. Please try again.';
+
+  @override
+  String get tryAgain => 'Try again';
+
+  @override
+  String get notebookCreated => 'Notebook created';
+
+  @override
+  String get moreActions => 'More actions';
+
+  @override
+  String get favorite => 'Add to favorites';
+
+  @override
+  String get removeFavorite => 'Remove from favorites';
+
+  @override
+  String get rename => 'Rename';
+
+  @override
+  String get moveToTrash => 'Move to trash';
 }

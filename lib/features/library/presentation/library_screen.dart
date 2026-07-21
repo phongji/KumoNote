@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kumo_note/features/library/application/providers/library_providers.dart';
+import 'package:kumo_note/features/library/domain/entities/notebook.dart';
 import 'package:kumo_note/l10n/app_localizations.dart';
 
-class LibraryScreen extends StatelessWidget {
+class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
+    final notebooks = ref.watch(notebookListProvider);
     final isWideScreen = MediaQuery.sizeOf(context).width >= 900;
 
     return Scaffold(
@@ -18,7 +22,22 @@ class LibraryScreen extends StatelessWidget {
                 strings: strings,
                 extended: MediaQuery.sizeOf(context).width >= 1180,
               ),
-            Expanded(child: _LibraryContent(strings: strings)),
+            Expanded(
+              child: _LibraryContent(
+                strings: strings,
+                notebooks: notebooks,
+                onCreateNotebook: () {
+                  _showCreateNotebookDialog(
+                    context: context,
+                    ref: ref,
+                    strings: strings,
+                  );
+                },
+                onRetry: () {
+                  ref.read(notebookListProvider.notifier).reload();
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -50,6 +69,95 @@ class LibraryScreen extends StatelessWidget {
               ],
             ),
     );
+  }
+
+  Future<void> _showCreateNotebookDialog({
+    required BuildContext context,
+    required WidgetRef ref,
+    required AppLocalizations strings,
+  }) async {
+    final formKey = GlobalKey<FormState>();
+    final titleController = TextEditingController();
+
+    final title = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(strings.newNotebookTitle),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: titleController,
+              autofocus: true,
+              textInputAction: TextInputAction.done,
+              decoration: InputDecoration(
+                labelText: strings.notebookNameLabel,
+                hintText: strings.notebookNameHint,
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return strings.notebookNameLabel;
+                }
+                return null;
+              },
+              onFieldSubmitted: (_) {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop(titleController.text.trim());
+                }
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              child: Text(strings.cancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.of(dialogContext).pop(titleController.text.trim());
+                }
+              },
+              child: Text(strings.create),
+            ),
+          ],
+        );
+      },
+    );
+
+
+    if (title == null || !context.mounted) {
+      return;
+    }
+
+    await ref.read(notebookListProvider.notifier).createNotebook(title);
+
+    if (!context.mounted) {
+      return;
+    }
+
+    final result = ref.read(notebookListProvider);
+
+    if (result.hasError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(strings.libraryErrorBody),
+          action: SnackBarAction(
+            label: strings.tryAgain,
+            onPressed: () {
+              ref.read(notebookListProvider.notifier).createNotebook(title);
+            },
+          ),
+        ),
+      );
+      return;
+    }
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(strings.notebookCreated)));
   }
 }
 
@@ -106,9 +214,17 @@ class _LibraryNavigation extends StatelessWidget {
 }
 
 class _LibraryContent extends StatelessWidget {
-  const _LibraryContent({required this.strings});
+  const _LibraryContent({
+    required this.strings,
+    required this.notebooks,
+    required this.onCreateNotebook,
+    required this.onRetry,
+  });
 
   final AppLocalizations strings;
+  final AsyncValue<List<Notebook>> notebooks;
+  final VoidCallback onCreateNotebook;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
@@ -169,7 +285,10 @@ class _LibraryContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                _QuickActions(strings: strings),
+                _QuickActions(
+                  strings: strings,
+                  onCreateNotebook: onCreateNotebook,
+                ),
                 const SizedBox(height: 40),
                 Text(strings.allNotebooks, style: theme.textTheme.titleLarge),
                 const SizedBox(height: 16),
@@ -184,7 +303,22 @@ class _LibraryContent extends StatelessWidget {
             horizontalPadding,
             40,
           ),
-          sliver: SliverToBoxAdapter(child: _EmptyLibrary(strings: strings)),
+          sliver: SliverToBoxAdapter(
+            child: notebooks.when(
+              data: (items) {
+                if (items.isEmpty) {
+                  return _EmptyLibrary(strings: strings);
+                }
+                return _NotebookGrid(notebooks: items);
+              },
+              loading: () {
+                return _LoadingLibrary(strings: strings);
+              },
+              error: (error, stackTrace) {
+                return _LibraryError(strings: strings, onRetry: onRetry);
+              },
+            ),
+          ),
         ),
       ],
     );
@@ -192,9 +326,10 @@ class _LibraryContent extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.strings});
+  const _QuickActions({required this.strings, required this.onCreateNotebook});
 
   final AppLocalizations strings;
+  final VoidCallback onCreateNotebook;
 
   @override
   Widget build(BuildContext context) {
@@ -203,12 +338,12 @@ class _QuickActions extends StatelessWidget {
       runSpacing: 12,
       children: [
         FilledButton.icon(
-          onPressed: () {},
+          onPressed: onCreateNotebook,
           icon: const Icon(Icons.add_rounded),
           label: Text(strings.newNotebook),
         ),
         OutlinedButton.icon(
-          onPressed: () {},
+          onPressed: null,
           icon: const Icon(Icons.edit_note_rounded),
           label: Text(strings.quickNote),
           style: OutlinedButton.styleFrom(
@@ -219,6 +354,173 @@ class _QuickActions extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _NotebookGrid extends StatelessWidget {
+  const _NotebookGrid({required this.notebooks});
+
+  final List<Notebook> notebooks;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columnCount = switch (constraints.maxWidth) {
+          >= 1100 => 4,
+          >= 760 => 3,
+          >= 480 => 2,
+          _ => 1,
+        };
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: notebooks.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: columnCount,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: 0.82,
+          ),
+          itemBuilder: (context, index) {
+            return _NotebookCard(notebook: notebooks[index]);
+          },
+        );
+      },
+    );
+  }
+}
+
+class _NotebookCard extends StatelessWidget {
+  const _NotebookCard({required this.notebook});
+
+  final Notebook notebook;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final coverColor = Color(notebook.coverColorValue);
+
+    return Material(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(22),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () {},
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: coverColor,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.menu_book_rounded,
+                      color: Colors.white,
+                      size: 42,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      notebook.title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleLarge,
+                    ),
+                  ),
+                  if (notebook.isFavorite)
+                    Icon(
+                      Icons.star_rounded,
+                      size: 20,
+                      color: theme.colorScheme.primary,
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _LoadingLibrary extends StatelessWidget {
+  const _LoadingLibrary({required this.strings});
+
+  final AppLocalizations strings;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 280,
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(height: 16),
+            Text(strings.loadingNotebooks),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LibraryError extends StatelessWidget {
+  const _LibraryError({required this.strings, required this.onRetry});
+
+  final AppLocalizations strings;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 48),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.colorScheme.outline),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.cloud_off_outlined,
+            size: 42,
+            color: theme.colorScheme.primary,
+          ),
+          const SizedBox(height: 18),
+          Text(
+            strings.libraryErrorTitle,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.titleLarge,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            strings.libraryErrorBody,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium,
+          ),
+          const SizedBox(height: 20),
+          OutlinedButton(onPressed: onRetry, child: Text(strings.tryAgain)),
+        ],
+      ),
     );
   }
 }

@@ -15,5 +15,21 @@
   "settings": "Settings",
   "emptyLibraryTitle": "Your space is ready",
   "emptyLibraryBody": "Create a notebook and begin with one thought.",
-  "saved": "Saved"
+  "saved": "Saved",
+  "newNotebookTitle": "Create a notebook",
+  "notebookNameLabel": "Notebook name",
+  "notebookNameHint": "For example, Meeting notes",
+  "create": "Create",
+  "cancel": "Cancel",
+  "untitledNotebook": "Untitled notebook",
+  "loadingNotebooks": "Opening your library…",
+  "libraryErrorTitle": "Your library could not be opened",
+  "libraryErrorBody": "Your notes are safe. Please try again.",
+  "tryAgain": "Try again",
+  "notebookCreated": "Notebook created",
+  "moreActions": "More actions",
+  "favorite": "Add to favorites",
+  "removeFavorite": "Remove from favorites",
+  "rename": "Rename",
+  "moveToTrash": "Move to trash"
 }

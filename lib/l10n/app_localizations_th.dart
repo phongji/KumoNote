@@ -55,4 +55,52 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get saved => 'บันทึกแล้ว';
+
+  @override
+  String get newNotebookTitle => 'สร้างสมุดใหม่';
+
+  @override
+  String get notebookNameLabel => 'ชื่อสมุด';
+
+  @override
+  String get notebookNameHint => 'เช่น บันทึกการประชุม';
+
+  @override
+  String get create => 'สร้าง';
+
+  @override
+  String get cancel => 'ยกเลิก';
+
+  @override
+  String get untitledNotebook => 'สมุดไม่มีชื่อ';
+
+  @override
+  String get loadingNotebooks => 'กำลังเปิดคลังสมุด…';
+
+  @override
+  String get libraryErrorTitle => 'เปิดคลังสมุดไม่ได้';
+
+  @override
+  String get libraryErrorBody => 'โน้ตของคุณยังปลอดภัย กรุณาลองอีกครั้ง';
+
+  @override
+  String get tryAgain => 'ลองอีกครั้ง';
+
+  @override
+  String get notebookCreated => 'สร้างสมุดแล้ว';
+
+  @override
+  String get moreActions => 'ตัวเลือกเพิ่มเติม';
+
+  @override
+  String get favorite => 'เพิ่มในรายการโปรด';
+
+  @override
+  String get removeFavorite => 'นำออกจากรายการโปรด';
+
+  @override
+  String get rename => 'เปลี่ยนชื่อ';
+
+  @override
+  String get moveToTrash => 'ย้ายไปถังขยะ';
 }
