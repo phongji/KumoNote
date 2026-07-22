@@ -1,10 +1,12 @@
-import 'page_trash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../application/controllers/page_controller.dart';
+import '../../../drawing/presentation/screens/page_editor_screen.dart';
+import '../../application/controllers/page_controller.dart' as page_app;
 import '../../application/providers/page_providers.dart';
 import '../widgets/page_card.dart';
+import '../widgets/page_setup_dialog.dart';
+import 'page_trash_screen.dart';
 
 final class NotebookScreen extends ConsumerWidget {
   const NotebookScreen({
@@ -19,7 +21,7 @@ final class NotebookScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pages = ref.watch(activePageListProvider(notebookId));
-    final controller = ref.read(pageControllerProvider(notebookId));
+    final controller = ref.read(page_app.pageControllerProvider(notebookId));
 
     return Scaffold(
       appBar: AppBar(
@@ -38,7 +40,12 @@ final class NotebookScreen extends ConsumerWidget {
             icon: const Icon(Icons.delete_outline),
           ),
           IconButton(
-            onPressed: controller.createPage,
+            onPressed: () async {
+              await _createPageWithSetup(
+                context: context,
+                controller: controller,
+              );
+            },
             icon: const Icon(Icons.note_add_outlined),
           ),
           const SizedBox(width: 8),
@@ -56,7 +63,12 @@ final class NotebookScreen extends ConsumerWidget {
           if (items.isEmpty) {
             return Center(
               child: IconButton.filled(
-                onPressed: controller.createPage,
+                onPressed: () async {
+                  await _createPageWithSetup(
+                    context: context,
+                    controller: controller,
+                  );
+                },
                 iconSize: 36,
                 padding: const EdgeInsets.all(24),
                 icon: const Icon(Icons.note_add_outlined),
@@ -91,7 +103,18 @@ final class NotebookScreen extends ConsumerWidget {
                     key: ValueKey(page.id),
                     page: page,
                     pageNumber: pageNumber,
-                    onOpen: () {},
+                    onOpen: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (context) {
+                            return PageEditorScreen(
+                              page: page,
+                              pageNumber: pageNumber,
+                            );
+                          },
+                        ),
+                      );
+                    },
                     onMoveToTrash: () {
                       controller.moveToTrash(page.id);
                     },
@@ -103,9 +126,28 @@ final class NotebookScreen extends ConsumerWidget {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: controller.createPage,
+        onPressed: () async {
+          await _createPageWithSetup(context: context, controller: controller);
+        },
         child: const Icon(Icons.add),
       ),
+    );
+  }
+
+  Future<void> _createPageWithSetup({
+    required BuildContext context,
+    required page_app.PageController controller,
+  }) async {
+    final setup = await showPageSetupDialog(context: context);
+
+    if (setup == null) {
+      return;
+    }
+
+    await controller.createPage(
+      orientation: setup.orientation,
+      template: setup.template,
+      paperColor: setup.paperColor,
     );
   }
 }

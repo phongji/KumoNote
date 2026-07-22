@@ -10,6 +10,7 @@ final class PageRecord {
     required this.sortOrder,
     required this.orientation,
     required this.template,
+    required this.paperColor,
     required this.width,
     required this.height,
     this.sectionId,
@@ -27,6 +28,7 @@ final class PageRecord {
   final int sortOrder;
   final String orientation;
   final String template;
+  final String paperColor;
   final double width;
   final double height;
   final String? thumbnailPath;
@@ -43,6 +45,7 @@ final class PageRecord {
       sortOrder: page.sortOrder,
       orientation: page.orientation.name,
       template: page.template.name,
+      paperColor: page.paperColor.name,
       width: page.width,
       height: page.height,
       thumbnailPath: page.thumbnailPath,
@@ -61,6 +64,8 @@ final class PageRecord {
       sortOrder: json['sortOrder']! as int,
       orientation: json['orientation']! as String,
       template: json['template']! as String,
+      paperColor:
+          json['paperColor'] as String? ?? PagePaperColor.paperWhite.name,
       width: (json['width']! as num).toDouble(),
       height: (json['height']! as num).toDouble(),
       thumbnailPath: json['thumbnailPath'] as String?,
@@ -81,6 +86,7 @@ final class PageRecord {
       sortOrder: sortOrder,
       orientation: PageOrientation.values.byName(orientation),
       template: PageTemplate.values.byName(template),
+      paperColor: PagePaperColor.values.byName(paperColor),
       width: width,
       height: height,
       thumbnailPath: thumbnailPath,
@@ -99,6 +105,7 @@ final class PageRecord {
       'sortOrder': sortOrder,
       'orientation': orientation,
       'template': template,
+      'paperColor': paperColor,
       'width': width,
       'height': height,
       'thumbnailPath': thumbnailPath,

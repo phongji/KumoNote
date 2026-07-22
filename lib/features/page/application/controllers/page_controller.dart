@@ -19,6 +19,7 @@ final class PageController {
   Future<NotePage> createPage({
     PageOrientation orientation = PageOrientation.portrait,
     PageTemplate template = PageTemplate.blank,
+    PagePaperColor paperColor = PagePaperColor.paperWhite,
   }) async {
     final page = await _ref
         .read(createPageProvider)
@@ -26,6 +27,7 @@ final class PageController {
           notebookId: notebookId,
           orientation: orientation,
           template: template,
+          paperColor: paperColor,
         );
 
     _refreshLists();

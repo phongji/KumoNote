@@ -125,4 +125,115 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get notebookRestored => 'กู้คืนสมุดแล้ว';
+
+  @override
+  String get chooseYourPaper => 'เลือกกระดาษที่ใช่';
+
+  @override
+  String get paperSetupHint => 'พื้นที่สงบสำหรับความคิดถัดไปของคุณ';
+
+  @override
+  String get pageDirection => 'วางหน้าแบบไหนดี';
+
+  @override
+  String get portrait => 'แนวตั้ง';
+
+  @override
+  String get landscape => 'แนวนอน';
+
+  @override
+  String get paperStyle => 'ลายกระดาษ';
+
+  @override
+  String get paperTone => 'โทนกระดาษ';
+
+  @override
+  String get createPage => 'สร้างหน้ากระดาษ';
+
+  @override
+  String get clearTemplate => 'โล่งสบาย';
+
+  @override
+  String get calmLines => 'เส้นสบาย';
+
+  @override
+  String get softGrid => 'ตารางละมุน';
+
+  @override
+  String get gentleDots => 'จุดเป็นจังหวะ';
+
+  @override
+  String get guidedLines => 'เส้นนำทาง';
+
+  @override
+  String get quietFocus => 'เริ่มอย่างสงบ';
+
+  @override
+  String get twinSpace => 'สองพื้นที่';
+
+  @override
+  String get quietChecklist => 'เช็กลิสต์เบา ๆ';
+
+  @override
+  String get yourInk => 'สีหมึกของคุณ';
+
+  @override
+  String get colorPalette => 'ชุดสี';
+
+  @override
+  String get customColor => 'เลือกสีที่ชอบ';
+
+  @override
+  String get strokeSize => 'ขนาดเส้น';
+
+  @override
+  String get pen => 'ปากกา';
+
+  @override
+  String get pencil => 'ดินสอ';
+
+  @override
+  String get highlighter => 'ไฮไลต์';
+
+  @override
+  String get eraser => 'ยางลบ';
+
+  @override
+  String get partialEraser => 'ลบเฉพาะจุด';
+
+  @override
+  String get wholeStroke => 'ลบทั้งเส้น';
+
+  @override
+  String get undo => 'ย้อนกลับ';
+
+  @override
+  String get redo => 'ทำอีกครั้ง';
+
+  @override
+  String get selectionTool => 'เลือกเส้น';
+
+  @override
+  String get moveSelection => 'ย้าย';
+
+  @override
+  String get copySelection => 'คัดลอก';
+
+  @override
+  String get cutSelection => 'ตัด';
+
+  @override
+  String get pasteSelection => 'วาง';
+
+  @override
+  String get deleteSelection => 'ลบ';
+
+  @override
+  String get resizeSelection => 'ปรับขนาด';
+
+  @override
+  String get rotateSelection => 'หมุน';
+
+  @override
+  String get changeSelectionColor => 'เปลี่ยนสี';
 }

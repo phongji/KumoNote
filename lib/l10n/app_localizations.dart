@@ -331,6 +331,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Notebook restored'**
   String get notebookRestored;
+
+  /// No description provided for @chooseYourPaper.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your paper'**
+  String get chooseYourPaper;
+
+  /// No description provided for @paperSetupHint.
+  ///
+  /// In en, this message translates to:
+  /// **'A quiet space for your next thought.'**
+  String get paperSetupHint;
+
+  /// No description provided for @pageDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Page direction'**
+  String get pageDirection;
+
+  /// No description provided for @portrait.
+  ///
+  /// In en, this message translates to:
+  /// **'Portrait'**
+  String get portrait;
+
+  /// No description provided for @landscape.
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get landscape;
+
+  /// No description provided for @paperStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper style'**
+  String get paperStyle;
+
+  /// No description provided for @paperTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Paper tone'**
+  String get paperTone;
+
+  /// No description provided for @createPage.
+  ///
+  /// In en, this message translates to:
+  /// **'Create page'**
+  String get createPage;
+
+  /// No description provided for @clearTemplate.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearTemplate;
+
+  /// No description provided for @calmLines.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm Lines'**
+  String get calmLines;
+
+  /// No description provided for @softGrid.
+  ///
+  /// In en, this message translates to:
+  /// **'Soft Grid'**
+  String get softGrid;
+
+  /// No description provided for @gentleDots.
+  ///
+  /// In en, this message translates to:
+  /// **'Gentle Dots'**
+  String get gentleDots;
+
+  /// No description provided for @guidedLines.
+  ///
+  /// In en, this message translates to:
+  /// **'Guided Lines'**
+  String get guidedLines;
+
+  /// No description provided for @quietFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet Focus'**
+  String get quietFocus;
+
+  /// No description provided for @twinSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Twin Space'**
+  String get twinSpace;
+
+  /// No description provided for @quietChecklist.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiet Checklist'**
+  String get quietChecklist;
+
+  /// No description provided for @yourInk.
+  ///
+  /// In en, this message translates to:
+  /// **'Your ink'**
+  String get yourInk;
+
+  /// No description provided for @colorPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'Color palette'**
+  String get colorPalette;
+
+  /// No description provided for @customColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your own color'**
+  String get customColor;
+
+  /// No description provided for @strokeSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Stroke size'**
+  String get strokeSize;
+
+  /// No description provided for @pen.
+  ///
+  /// In en, this message translates to:
+  /// **'Pen'**
+  String get pen;
+
+  /// No description provided for @pencil.
+  ///
+  /// In en, this message translates to:
+  /// **'Pencil'**
+  String get pencil;
+
+  /// No description provided for @highlighter.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlighter'**
+  String get highlighter;
+
+  /// No description provided for @eraser.
+  ///
+  /// In en, this message translates to:
+  /// **'Eraser'**
+  String get eraser;
+
+  /// No description provided for @partialEraser.
+  ///
+  /// In en, this message translates to:
+  /// **'Erase a small area'**
+  String get partialEraser;
+
+  /// No description provided for @wholeStroke.
+  ///
+  /// In en, this message translates to:
+  /// **'Erase the whole stroke'**
+  String get wholeStroke;
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
+  /// No description provided for @redo.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo'**
+  String get redo;
+
+  /// No description provided for @selectionTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get selectionTool;
+
+  /// No description provided for @moveSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Move'**
+  String get moveSelection;
+
+  /// No description provided for @copySelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copySelection;
+
+  /// No description provided for @cutSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Cut'**
+  String get cutSelection;
+
+  /// No description provided for @pasteSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste'**
+  String get pasteSelection;
+
+  /// No description provided for @deleteSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteSelection;
+
+  /// No description provided for @resizeSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Resize'**
+  String get resizeSelection;
+
+  /// No description provided for @rotateSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Rotate'**
+  String get rotateSelection;
+
+  /// No description provided for @changeSelectionColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Change color'**
+  String get changeSelectionColor;
 }
 
 class _AppLocalizationsDelegate

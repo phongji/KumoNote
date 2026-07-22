@@ -126,4 +126,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notebookRestored => 'Notebook restored';
+
+  @override
+  String get chooseYourPaper => 'Choose your paper';
+
+  @override
+  String get paperSetupHint => 'A quiet space for your next thought.';
+
+  @override
+  String get pageDirection => 'Page direction';
+
+  @override
+  String get portrait => 'Portrait';
+
+  @override
+  String get landscape => 'Landscape';
+
+  @override
+  String get paperStyle => 'Paper style';
+
+  @override
+  String get paperTone => 'Paper tone';
+
+  @override
+  String get createPage => 'Create page';
+
+  @override
+  String get clearTemplate => 'Clear';
+
+  @override
+  String get calmLines => 'Calm Lines';
+
+  @override
+  String get softGrid => 'Soft Grid';
+
+  @override
+  String get gentleDots => 'Gentle Dots';
+
+  @override
+  String get guidedLines => 'Guided Lines';
+
+  @override
+  String get quietFocus => 'Quiet Focus';
+
+  @override
+  String get twinSpace => 'Twin Space';
+
+  @override
+  String get quietChecklist => 'Quiet Checklist';
+
+  @override
+  String get yourInk => 'Your ink';
+
+  @override
+  String get colorPalette => 'Color palette';
+
+  @override
+  String get customColor => 'Choose your own color';
+
+  @override
+  String get strokeSize => 'Stroke size';
+
+  @override
+  String get pen => 'Pen';
+
+  @override
+  String get pencil => 'Pencil';
+
+  @override
+  String get highlighter => 'Highlighter';
+
+  @override
+  String get eraser => 'Eraser';
+
+  @override
+  String get partialEraser => 'Erase a small area';
+
+  @override
+  String get wholeStroke => 'Erase the whole stroke';
+
+  @override
+  String get undo => 'Undo';
+
+  @override
+  String get redo => 'Redo';
+
+  @override
+  String get selectionTool => 'Select';
+
+  @override
+  String get moveSelection => 'Move';
+
+  @override
+  String get copySelection => 'Copy';
+
+  @override
+  String get cutSelection => 'Cut';
+
+  @override
+  String get pasteSelection => 'Paste';
+
+  @override
+  String get deleteSelection => 'Delete';
+
+  @override
+  String get resizeSelection => 'Resize';
+
+  @override
+  String get rotateSelection => 'Rotate';
+
+  @override
+  String get changeSelectionColor => 'Change color';
 }

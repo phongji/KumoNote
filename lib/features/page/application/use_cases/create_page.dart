@@ -19,6 +19,7 @@ final class CreatePage {
     String? sectionId,
     PageOrientation orientation = PageOrientation.portrait,
     PageTemplate template = PageTemplate.blank,
+    PagePaperColor paperColor = PagePaperColor.paperWhite,
   }) async {
     final normalizedNotebookId = notebookId.trim();
 
@@ -54,6 +55,7 @@ final class CreatePage {
       sortOrder: highestSortOrder + 1000,
       orientation: orientation,
       template: template,
+      paperColor: paperColor,
       width: isPortrait ? 595 : 842,
       height: isPortrait ? 842 : 595,
       thumbnailPath: null,

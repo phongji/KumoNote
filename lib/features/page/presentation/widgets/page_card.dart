@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/note_page.dart';
+import '../painters/paper_template_painter.dart';
 
 final class PageCard extends StatelessWidget {
   const PageCard({
@@ -28,16 +29,17 @@ final class PageCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: Container(
-                color: colorScheme.surface,
+              child: ColoredBox(
+                color: Color(page.paperColor.colorValue),
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Positioned.fill(
-                      child: CustomPaint(
-                        painter: _PageTemplatePainter(
-                          template: page.template,
-                          lineColor: colorScheme.outlineVariant,
-                        ),
+                    CustomPaint(
+                      painter: PaperTemplatePainter(
+                        template: page.template,
+                        lineColor: const Color(
+                          0xFF7D8583,
+                        ).withValues(alpha: 0.34),
                       ),
                     ),
                     Center(
@@ -72,54 +74,5 @@ final class PageCard extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-final class _PageTemplatePainter extends CustomPainter {
-  const _PageTemplatePainter({required this.template, required this.lineColor});
-
-  final PageTemplate template;
-  final Color lineColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = lineColor
-      ..strokeWidth = 1;
-
-    switch (template) {
-      case PageTemplate.blank:
-        return;
-
-      case PageTemplate.ruled:
-        for (double y = 28; y < size.height; y += 24) {
-          canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-        }
-        break;
-
-      case PageTemplate.grid:
-        for (double y = 24; y < size.height; y += 24) {
-          canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-        }
-
-        for (double x = 24; x < size.width; x += 24) {
-          canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
-        }
-        break;
-
-      case PageTemplate.dotted:
-        for (double y = 20; y < size.height; y += 20) {
-          for (double x = 20; x < size.width; x += 20) {
-            canvas.drawCircle(Offset(x, y), 1.2, paint);
-          }
-        }
-        break;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _PageTemplatePainter oldDelegate) {
-    return template != oldDelegate.template ||
-        lineColor != oldDelegate.lineColor;
   }
 }
