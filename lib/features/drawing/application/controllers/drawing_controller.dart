@@ -23,6 +23,7 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
   DrawingController(this._pageId);
 
   static const _minimumPointDistanceSquared = 0.36;
+  static const _draftRecoveryDelay = Duration(milliseconds: 500);
 
   final Uuid _uuid = const Uuid();
   final StrokeHitTester _hitTester = const StrokeHitTester();
@@ -42,9 +43,14 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
   List<InkStroke>? _selectionRotateBeforeStrokes;
   double? _selectionRotateLastAngle;
   bool _selectionRotateChanged = false;
+  Timer? _draftRecoveryTimer;
 
   @override
   Future<DrawingState> build() async {
+    ref.onDispose(() {
+      _draftRecoveryTimer?.cancel();
+    });
+
     final strokes = await ref.read(inkRepositoryProvider).getStrokes(_pageId);
 
     return DrawingState.initial().copyWith(
@@ -126,6 +132,8 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
     state = AsyncData(
       current.copyWith(activeStroke: activeStroke.addPoint(point)),
     );
+
+    _scheduleDraftRecovery();
   }
 
   void straightenActiveStroke() {
@@ -144,9 +152,13 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
     ]);
 
     state = AsyncData(current.copyWith(activeStroke: straightStroke));
+    _scheduleDraftRecovery();
   }
 
   Future<void> endStroke() async {
+    _draftRecoveryTimer?.cancel();
+    _draftRecoveryTimer = null;
+
     final current = state.requireValue;
     final activeStroke = current.activeStroke;
 
@@ -879,6 +891,31 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
     }
 
     state = AsyncData(state.requireValue.copyWith(strokeWidth: width));
+  }
+
+  void _scheduleDraftRecovery() {
+    _draftRecoveryTimer?.cancel();
+    _draftRecoveryTimer = Timer(_draftRecoveryDelay, () {
+      unawaited(_saveDraftForRecovery());
+    });
+  }
+
+  Future<void> _saveDraftForRecovery() async {
+    if (!state.hasValue) {
+      return;
+    }
+
+    final activeStroke = state.requireValue.activeStroke;
+
+    if (activeStroke == null || activeStroke.points.length < 2) {
+      return;
+    }
+
+    try {
+      await ref.read(inkRepositoryProvider).save(activeStroke);
+    } catch (_) {
+      // A completed stroke still retries the normal save in endStroke().
+    }
   }
 
   Future<void> _persistHistoryState({required String errorMessage}) async {

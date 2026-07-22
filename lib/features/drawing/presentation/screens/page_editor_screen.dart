@@ -265,9 +265,18 @@ final class PageEditorScreen extends ConsumerWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(72),
                       child: Material(
-                        elevation: 3,
-                        shadowColor: Colors.black.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(4),
+                        elevation: 4,
+                        surfaceTintColor: Colors.transparent,
+                        shadowColor: const Color(
+                          0xFF4F4A43,
+                        ).withValues(alpha: 0.16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                          side: const BorderSide(
+                            color: Color(0xFFD8D4CA),
+                            width: 1,
+                          ),
+                        ),
                         clipBehavior: Clip.antiAlias,
                         child: SizedBox(
                           width: page.width,
