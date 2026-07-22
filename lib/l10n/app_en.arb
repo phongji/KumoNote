@@ -79,5 +79,23 @@
   "deleteSelection": "Delete",
   "resizeSelection": "Resize",
   "rotateSelection": "Rotate",
-  "changeSelectionColor": "Change color"
-}
+  "changeSelectionColor": "Change color",
+
+  "navigationTool": "Move the paper",
+  "textTool": "Text",
+  "addText": "Add text",
+  "textDialogTitle": "A little note",
+  "textDialogHint": "Let your words rest here",
+  "createText": "Place on paper",
+"deleteText": "Delete text",
+"textEmptyError": "Write something before placing it",
+
+"imageTool": "Pictures",
+"addImage": "Place a picture",
+"imageImportFailed": "This picture could not be placed",
+"imageTooLarge": "Choose a picture smaller than 15 MB",
+
+"cropImage": "Crop picture",
+"resetCrop": "Reset",
+"applyCrop": "Apply crop"
+} 

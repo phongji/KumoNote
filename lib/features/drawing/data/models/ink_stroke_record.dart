@@ -1,3 +1,4 @@
+// Copy all content into ink_stroke_record.dart (z-index v2).
 import '../../domain/entities/ink_stroke.dart';
 import 'ink_point_record.dart';
 
@@ -11,6 +12,7 @@ final class InkStrokeRecord {
     required this.opacity,
     required this.points,
     required this.createdAt,
+    required this.zIndex,
   });
 
   final String id;
@@ -21,6 +23,7 @@ final class InkStrokeRecord {
   final double opacity;
   final List<InkPointRecord> points;
   final DateTime createdAt;
+  final int zIndex;
 
   factory InkStrokeRecord.fromDomain(InkStroke stroke) {
     return InkStrokeRecord(
@@ -32,6 +35,7 @@ final class InkStrokeRecord {
       opacity: stroke.opacity,
       points: stroke.points.map(InkPointRecord.fromDomain).toList(),
       createdAt: stroke.createdAt.toUtc(),
+      zIndex: stroke.zIndex,
     );
   }
 
@@ -49,6 +53,7 @@ final class InkStrokeRecord {
         return InkPointRecord.fromJson(Map<String, Object?>.from(item as Map));
       }).toList(),
       createdAt: DateTime.parse(json['createdAt'] as String).toUtc(),
+      zIndex: (json['zIndex'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -62,6 +67,7 @@ final class InkStrokeRecord {
       opacity: opacity,
       points: points.map((point) => point.toDomain()).toList(),
       createdAt: createdAt,
+      zIndex: zIndex,
     );
   }
 
@@ -75,6 +81,7 @@ final class InkStrokeRecord {
       'opacity': opacity,
       'points': points.map((point) => point.toJson()).toList(),
       'createdAt': createdAt.toIso8601String(),
+      'zIndex': zIndex,
     };
   }
 }

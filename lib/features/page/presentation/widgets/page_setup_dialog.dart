@@ -243,26 +243,30 @@ final class _TemplateTile extends StatelessWidget {
                     ),
                   ),
                   clipBehavior: Clip.antiAlias,
-                  child: CustomPaint(
-                    painter: PaperTemplatePainter(
-                      template: template,
-                      lineColor: const Color(
-                        0xFF7D8583,
-                      ).withValues(alpha: 0.34),
-                    ),
-                    child: isSelected
-                        ? Align(
-                            alignment: Alignment.topRight,
-                            child: Padding(
-                              padding: const EdgeInsets.all(5),
-                              child: Icon(
-                                Icons.check_circle,
-                                size: 20,
-                                color: colorScheme.primary,
-                              ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CustomPaint(
+                        painter: PaperTemplatePainter(
+                          template: template,
+                          lineColor: const Color(
+                            0xFF7D8583,
+                          ).withValues(alpha: 0.34),
+                        ),
+                      ),
+                      if (isSelected)
+                        Align(
+                          alignment: Alignment.topRight,
+                          child: Padding(
+                            padding: const EdgeInsets.all(5),
+                            child: Icon(
+                              Icons.check_circle,
+                              size: 20,
+                              color: colorScheme.primary,
                             ),
-                          )
-                        : null,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
               ),

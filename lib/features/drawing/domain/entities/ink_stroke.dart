@@ -1,4 +1,4 @@
-// Copy all content into ink_stroke.dart.
+// Copy all content into ink_stroke.dart (z-index v2).
 import 'dart:math' as math;
 
 import 'ink_point.dart';
@@ -15,6 +15,7 @@ final class InkStroke {
     required this.opacity,
     required List<InkPoint> points,
     required this.createdAt,
+    this.zIndex = 0,
   }) : assert(width > 0),
        assert(opacity >= 0),
        assert(opacity <= 1),
@@ -28,6 +29,7 @@ final class InkStroke {
   final double opacity;
   final List<InkPoint> points;
   final DateTime createdAt;
+  final int zIndex;
 
   bool get isEmpty => points.isEmpty;
 
@@ -47,6 +49,7 @@ final class InkStroke {
       opacity: opacity,
       points: newPoints,
       createdAt: createdAt,
+      zIndex: zIndex,
     );
   }
 
@@ -68,6 +71,7 @@ final class InkStroke {
       opacity: opacity,
       points: points,
       createdAt: createdAt,
+      zIndex: zIndex,
     );
   }
 
@@ -96,6 +100,7 @@ final class InkStroke {
         );
       }).toList(),
       createdAt: createdAt,
+      zIndex: zIndex,
     );
   }
 
@@ -122,6 +127,20 @@ final class InkStroke {
     );
   }
 
+  InkStroke reorder(int newZIndex) {
+    return InkStroke(
+      id: id,
+      pageId: pageId,
+      tool: tool,
+      colorValue: colorValue,
+      width: width,
+      opacity: opacity,
+      points: points,
+      createdAt: createdAt,
+      zIndex: newZIndex,
+    );
+  }
+
   InkStroke duplicate({
     required String newId,
     required double offsetX,
@@ -138,6 +157,7 @@ final class InkStroke {
           .map((point) => point.translate(deltaX: offsetX, deltaY: offsetY))
           .toList(),
       createdAt: DateTime.now().toUtc(),
+      zIndex: zIndex + 1,
     );
   }
 }

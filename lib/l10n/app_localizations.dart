@@ -553,6 +553,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change color'**
   String get changeSelectionColor;
+
+  /// No description provided for @navigationTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the paper'**
+  String get navigationTool;
+
+  /// No description provided for @textTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Text'**
+  String get textTool;
+
+  /// No description provided for @addText.
+  ///
+  /// In en, this message translates to:
+  /// **'Add text'**
+  String get addText;
+
+  /// No description provided for @textDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A little note'**
+  String get textDialogTitle;
+
+  /// No description provided for @textDialogHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Let your words rest here'**
+  String get textDialogHint;
+
+  /// No description provided for @createText.
+  ///
+  /// In en, this message translates to:
+  /// **'Place on paper'**
+  String get createText;
+
+  /// No description provided for @deleteText.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete text'**
+  String get deleteText;
+
+  /// No description provided for @textEmptyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Write something before placing it'**
+  String get textEmptyError;
+
+  /// No description provided for @imageTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Pictures'**
+  String get imageTool;
+
+  /// No description provided for @addImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Place a picture'**
+  String get addImage;
+
+  /// No description provided for @imageImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This picture could not be placed'**
+  String get imageImportFailed;
+
+  /// No description provided for @imageTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a picture smaller than 15 MB'**
+  String get imageTooLarge;
+
+  /// No description provided for @cropImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Crop picture'**
+  String get cropImage;
+
+  /// No description provided for @resetCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get resetCrop;
+
+  /// No description provided for @applyCrop.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply crop'**
+  String get applyCrop;
 }
 
 class _AppLocalizationsDelegate

@@ -1,3 +1,4 @@
+// Copy all content into drawing_controller.dart (automatic z-index).
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -72,6 +73,7 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
       return;
     }
 
+    final now = DateTime.now().toUtc();
     final stroke = InkStroke(
       id: _uuid.v4(),
       pageId: _pageId,
@@ -87,7 +89,8 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
           elapsedMicroseconds: elapsedMicroseconds,
         ),
       ],
-      createdAt: DateTime.now().toUtc(),
+      createdAt: now,
+      zIndex: now.microsecondsSinceEpoch,
     );
 
     state = AsyncData(
@@ -853,6 +856,97 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
             : current.selection,
         clearActiveStroke: true,
       ),
+    );
+  }
+
+  Future<void> reorderStroke({
+    required String strokeId,
+    required int zIndex,
+  }) async {
+    final current = state.requireValue;
+
+    if (current.isSaving) {
+      return;
+    }
+
+    final index = current.strokes.indexWhere((stroke) => stroke.id == strokeId);
+
+    if (index == -1) {
+      return;
+    }
+
+    final updatedStrokes = [...current.strokes]
+      ..[index] = current.strokes[index].reorder(zIndex);
+    final historyEntry = DrawingHistoryEntry(
+      beforeStrokes: current.strokes,
+      afterStrokes: updatedStrokes,
+    );
+
+    state = AsyncData(
+      current.copyWith(
+        strokes: updatedStrokes,
+        undoHistory: [...current.undoHistory, historyEntry],
+        redoHistory: const [],
+        clearActiveStroke: true,
+        isSaving: true,
+      ),
+    );
+
+    await _persistHistoryState(
+      errorMessage: 'Unable to reorder the selected stroke.',
+    );
+  }
+
+  Future<void> reorderSelection({required int baseZIndex}) async {
+    final current = state.requireValue;
+    final selectedIds = current.selection.selectedStrokeIds;
+
+    if (current.isSaving || selectedIds.isEmpty) {
+      return;
+    }
+
+    final selectedStrokes =
+        current.strokes
+            .where((stroke) => selectedIds.contains(stroke.id))
+            .toList()
+          ..sort((first, second) {
+            final orderComparison = first.zIndex.compareTo(second.zIndex);
+
+            if (orderComparison != 0) {
+              return orderComparison;
+            }
+
+            return first.createdAt.compareTo(second.createdAt);
+          });
+    final newOrderById = <String, int>{};
+
+    for (var index = 0; index < selectedStrokes.length; index++) {
+      newOrderById[selectedStrokes[index].id] = baseZIndex + index;
+    }
+
+    final updatedStrokes = current.strokes
+        .map((stroke) {
+          final newOrder = newOrderById[stroke.id];
+          return newOrder == null ? stroke : stroke.reorder(newOrder);
+        })
+        .toList(growable: false);
+    final historyEntry = DrawingHistoryEntry(
+      beforeStrokes: current.strokes,
+      afterStrokes: updatedStrokes,
+    );
+
+    state = AsyncData(
+      current.copyWith(
+        strokes: updatedStrokes,
+        undoHistory: [...current.undoHistory, historyEntry],
+        redoHistory: const [],
+        clearActiveStroke: true,
+        isSaving: true,
+      ),
+    );
+
+    await _persistHistoryState(
+      errorMessage: 'Unable to reorder the selected strokes.',
     );
   }
 

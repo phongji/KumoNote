@@ -1,4 +1,4 @@
-// Copy all content into drawing_canvas.dart.
+// Copy all content into drawing_canvas.dart (unified scene).
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -10,6 +10,7 @@ import '../../../page/presentation/painters/paper_template_painter.dart';
 import '../../application/controllers/drawing_controller.dart';
 import '../painters/ink_painter.dart';
 import '../painters/selection_overlay_painter.dart';
+import 'scene_object_layer.dart';
 
 final class DrawingCanvas extends ConsumerStatefulWidget {
   const DrawingCanvas({
@@ -70,7 +71,9 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
           child: Listener(
             behavior: HitTestBehavior.opaque,
             onPointerDown: (event) {
-              if (state.isNavigationMode) {
+              if (state.isNavigationMode ||
+                  state.isTextMode ||
+                  state.isImageMode) {
                 _cancelActiveGesture();
                 return;
               }
@@ -101,7 +104,9 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               _scheduleStraighten();
             },
             onPointerMove: (event) {
-              if (state.isNavigationMode) {
+              if (state.isNavigationMode ||
+                  state.isTextMode ||
+                  state.isImageMode) {
                 return;
               }
 
@@ -134,7 +139,9 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               }
             },
             onPointerUp: (_) {
-              if (state.isNavigationMode) {
+              if (state.isNavigationMode ||
+                  state.isTextMode ||
+                  state.isImageMode) {
                 _cancelActiveGesture();
                 return;
               }
@@ -146,7 +153,9 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               _finishStroke();
             },
             onPointerCancel: (_) {
-              if (state.isNavigationMode) {
+              if (state.isNavigationMode ||
+                  state.isTextMode ||
+                  state.isImageMode) {
                 _cancelActiveGesture();
                 return;
               }
@@ -170,12 +179,20 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
                       ).withValues(alpha: 0.34),
                     ),
                   ),
-                  CustomPaint(
-                    painter: InkPainter(
-                      strokes: state.strokes,
-                      activeStroke: state.activeStroke,
-                    ),
+                  SceneObjectLayer(
+                    pageId: widget.pageId,
+                    strokes: state.strokes,
+                    interactionMode: state.interactionMode,
                   ),
+                  if (state.activeStroke != null)
+                    IgnorePointer(
+                      child: CustomPaint(
+                        painter: InkPainter(
+                          strokes: const [],
+                          activeStroke: state.activeStroke,
+                        ),
+                      ),
+                    ),
                   IgnorePointer(
                     child: CustomPaint(
                       painter: SelectionOverlayPainter(

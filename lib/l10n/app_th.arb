@@ -79,5 +79,23 @@
   "deleteSelection": "ลบ",
   "resizeSelection": "ปรับขนาด",
   "rotateSelection": "หมุน",
-  "changeSelectionColor": "เปลี่ยนสี"
+  "changeSelectionColor": "เปลี่ยนสี",
+
+  "navigationTool": "เลื่อนกระดาษ",
+  "textTool": "ข้อความ",
+  "addText": "เพิ่มข้อความ",
+  "textDialogTitle": "วางถ้อยคำเบา ๆ",
+  "textDialogHint": "พิมพ์สิ่งที่อยากเก็บไว้",
+  "createText": "วางบนกระดาษ",
+"deleteText": "ลบข้อความ",
+"textEmptyError": "เขียนสักนิดก่อนวางลงบนกระดาษ",
+
+"imageTool": "รูปภาพ",
+"addImage": "วางรูปบนกระดาษ",
+"imageImportFailed": "ยังวางรูปนี้ไม่ได้",
+"imageTooLarge": "เลือกรูปที่มีขนาดไม่เกิน 15 MB",
+
+"cropImage": "จัดกรอบรูป",
+"resetCrop": "คืนกรอบเดิม",
+"applyCrop": "ใช้กรอบนี้"
 }

@@ -1,8 +1,13 @@
+// Copy all content into page_editor_screen.dart (separate image actions v3).
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kumo_note/l10n/app_localizations.dart';
 
+import '../../../image/application/controllers/image_object_controller.dart';
+import '../../../image/application/services/image_import_service.dart';
 import '../../../page/domain/entities/note_page.dart';
+import '../../../text/application/controllers/text_object_controller.dart';
+import '../../../text/presentation/widgets/add_text_dialog.dart';
 import '../../application/controllers/drawing_controller.dart';
 import '../../application/state/drawing_state.dart';
 import '../../domain/entities/ink_stroke.dart';
@@ -183,7 +188,7 @@ final class PageEditorScreen extends ConsumerWidget {
                             selectedIcon: const Icon(Icons.gesture),
                           ),
                           IconButton(
-                            tooltip: strings.moveSelection,
+                            tooltip: strings.navigationTool,
                             style: selectedButtonStyle,
                             isSelected: state.isNavigationMode,
                             onPressed: () {
@@ -195,6 +200,107 @@ final class PageEditorScreen extends ConsumerWidget {
                             },
                             icon: const Icon(Icons.pan_tool_outlined),
                             selectedIcon: const Icon(Icons.pan_tool),
+                          ),
+                          IconButton(
+                            tooltip: strings.textTool,
+                            style: selectedButtonStyle,
+                            isSelected: state.isTextMode,
+                            onPressed: () async {
+                              controller.setInteractionMode(
+                                CanvasInteractionMode.text,
+                              );
+
+                              final plainText = await showAddTextDialog(
+                                context: context,
+                              );
+
+                              if (!context.mounted || plainText == null) {
+                                return;
+                              }
+
+                              await ref
+                                  .read(
+                                    textObjectControllerProvider(
+                                      page.id,
+                                    ).notifier,
+                                  )
+                                  .createText(
+                                    x: page.width / 2 - 120,
+                                    y: page.height / 2 - 44,
+                                    languageCode: Localizations.localeOf(
+                                      context,
+                                    ).languageCode,
+                                    initialText: plainText,
+                                  );
+                            },
+                            icon: const Icon(Icons.text_fields_outlined),
+                            selectedIcon: const Icon(Icons.text_fields),
+                          ),
+                          IconButton(
+                            tooltip: strings.imageTool,
+                            style: selectedButtonStyle,
+                            isSelected: state.isImageMode,
+                            onPressed: () {
+                              controller.setInteractionMode(
+                                state.isImageMode
+                                    ? CanvasInteractionMode.ink
+                                    : CanvasInteractionMode.image,
+                              );
+                            },
+                            icon: const Icon(Icons.image_outlined),
+                            selectedIcon: const Icon(Icons.image_rounded),
+                          ),
+                          IconButton(
+                            tooltip: strings.addImage,
+                            onPressed: () async {
+                              controller.setInteractionMode(
+                                CanvasInteractionMode.image,
+                              );
+
+                              try {
+                                final importedImage =
+                                    await const ImageImportService()
+                                        .pickImage();
+
+                                if (!context.mounted || importedImage == null) {
+                                  return;
+                                }
+
+                                await ref
+                                    .read(
+                                      imageObjectControllerProvider(
+                                        page.id,
+                                      ).notifier,
+                                    )
+                                    .createImage(
+                                      originalPath: importedImage.dataUrl,
+                                      checksum: importedImage.checksum,
+                                      sourceWidth: importedImage.width,
+                                      sourceHeight: importedImage.height,
+                                      pageWidth: page.width,
+                                      pageHeight: page.height,
+                                    );
+                              } catch (error, stackTrace) {
+                                debugPrint('IMAGE IMPORT ERROR: $error');
+                                debugPrintStack(stackTrace: stackTrace);
+
+                                if (!context.mounted) {
+                                  return;
+                                }
+
+                                final message =
+                                    error.toString().contains('15 MB')
+                                    ? strings.imageTooLarge
+                                    : strings.imageImportFailed;
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(message)),
+                                );
+                              }
+                            },
+                            icon: const Icon(
+                              Icons.add_photo_alternate_outlined,
+                            ),
                           ),
                         ],
                       ),
@@ -246,10 +352,30 @@ final class PageEditorScreen extends ConsumerWidget {
                   cutLabel: strings.cutSelection,
                   pasteLabel: strings.pasteSelection,
                   deleteLabel: strings.deleteSelection,
+                  bringToFrontLabel:
+                      Localizations.localeOf(context).languageCode == 'th'
+                      ? 'นำขึ้นบนสุด'
+                      : 'Bring to front',
+                  sendToBackLabel:
+                      Localizations.localeOf(context).languageCode == 'th'
+                      ? 'ส่งไปหลังสุด'
+                      : 'Send to back',
                   onCopy: controller.copySelection,
                   onCut: controller.cutSelection,
                   onPaste: controller.pasteSelection,
                   onDelete: controller.deleteSelection,
+                  onBringToFront: () {
+                    controller.reorderSelection(
+                      baseZIndex: DateTime.now().toUtc().microsecondsSinceEpoch,
+                    );
+                  },
+                  onSendToBack: () {
+                    controller.reorderSelection(
+                      baseZIndex: -DateTime.now()
+                          .toUtc()
+                          .microsecondsSinceEpoch,
+                    );
+                  },
                 ),
               );
             },

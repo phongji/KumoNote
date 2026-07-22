@@ -236,4 +236,49 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get changeSelectionColor => 'เปลี่ยนสี';
+
+  @override
+  String get navigationTool => 'เลื่อนกระดาษ';
+
+  @override
+  String get textTool => 'ข้อความ';
+
+  @override
+  String get addText => 'เพิ่มข้อความ';
+
+  @override
+  String get textDialogTitle => 'วางถ้อยคำเบา ๆ';
+
+  @override
+  String get textDialogHint => 'พิมพ์สิ่งที่อยากเก็บไว้';
+
+  @override
+  String get createText => 'วางบนกระดาษ';
+
+  @override
+  String get deleteText => 'ลบข้อความ';
+
+  @override
+  String get textEmptyError => 'เขียนสักนิดก่อนวางลงบนกระดาษ';
+
+  @override
+  String get imageTool => 'รูปภาพ';
+
+  @override
+  String get addImage => 'วางรูปบนกระดาษ';
+
+  @override
+  String get imageImportFailed => 'ยังวางรูปนี้ไม่ได้';
+
+  @override
+  String get imageTooLarge => 'เลือกรูปที่มีขนาดไม่เกิน 15 MB';
+
+  @override
+  String get cropImage => 'จัดกรอบรูป';
+
+  @override
+  String get resetCrop => 'คืนกรอบเดิม';
+
+  @override
+  String get applyCrop => 'ใช้กรอบนี้';
 }

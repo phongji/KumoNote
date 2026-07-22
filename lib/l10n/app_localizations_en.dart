@@ -237,4 +237,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeSelectionColor => 'Change color';
+
+  @override
+  String get navigationTool => 'Move the paper';
+
+  @override
+  String get textTool => 'Text';
+
+  @override
+  String get addText => 'Add text';
+
+  @override
+  String get textDialogTitle => 'A little note';
+
+  @override
+  String get textDialogHint => 'Let your words rest here';
+
+  @override
+  String get createText => 'Place on paper';
+
+  @override
+  String get deleteText => 'Delete text';
+
+  @override
+  String get textEmptyError => 'Write something before placing it';
+
+  @override
+  String get imageTool => 'Pictures';
+
+  @override
+  String get addImage => 'Place a picture';
+
+  @override
+  String get imageImportFailed => 'This picture could not be placed';
+
+  @override
+  String get imageTooLarge => 'Choose a picture smaller than 15 MB';
+
+  @override
+  String get cropImage => 'Crop picture';
+
+  @override
+  String get resetCrop => 'Reset';
+
+  @override
+  String get applyCrop => 'Apply crop';
 }

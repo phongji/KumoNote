@@ -5,7 +5,7 @@ import 'stroke_selection_state.dart';
 
 enum EraserMode { partial, wholeStroke }
 
-enum CanvasInteractionMode { ink, lasso, navigation }
+enum CanvasInteractionMode { ink, lasso, navigation, text, image }
 
 final class DrawingState {
   DrawingState({
@@ -66,6 +66,10 @@ final class DrawingState {
   bool get isNavigationMode {
     return interactionMode == CanvasInteractionMode.navigation;
   }
+
+  bool get isTextMode => interactionMode == CanvasInteractionMode.text;
+
+  bool get isImageMode => interactionMode == CanvasInteractionMode.image;
 
   bool get hasSelection => selection.hasSelection;
 

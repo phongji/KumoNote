@@ -1,4 +1,3 @@
-// Copy all content into selection_action_bar.dart.
 import 'package:flutter/material.dart';
 
 final class SelectionActionBar extends StatelessWidget {
@@ -10,10 +9,14 @@ final class SelectionActionBar extends StatelessWidget {
     required this.cutLabel,
     required this.pasteLabel,
     required this.deleteLabel,
+    required this.bringToFrontLabel,
+    required this.sendToBackLabel,
     required this.onCopy,
     required this.onCut,
     required this.onPaste,
     required this.onDelete,
+    required this.onBringToFront,
+    required this.onSendToBack,
     super.key,
   });
 
@@ -24,10 +27,14 @@ final class SelectionActionBar extends StatelessWidget {
   final String cutLabel;
   final String pasteLabel;
   final String deleteLabel;
+  final String bringToFrontLabel;
+  final String sendToBackLabel;
   final VoidCallback onCopy;
   final VoidCallback onCut;
   final VoidCallback onPaste;
   final VoidCallback onDelete;
+  final VoidCallback onBringToFront;
+  final VoidCallback onSendToBack;
 
   @override
   Widget build(BuildContext context) {
@@ -56,35 +63,50 @@ final class SelectionActionBar extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (hasSelection)
-            IconButton(
-              tooltip: copyLabel,
-              onPressed: isSaving ? null : onCopy,
-              icon: const Icon(Icons.copy_rounded),
-            ),
-          if (hasSelection)
-            IconButton(
-              tooltip: cutLabel,
-              onPressed: isSaving ? null : onCut,
-              icon: const Icon(Icons.content_cut_rounded),
-            ),
-          if (hasClipboard)
-            IconButton(
-              tooltip: pasteLabel,
-              onPressed: isSaving ? null : onPaste,
-              icon: const Icon(Icons.content_paste_rounded),
-            ),
-          if (hasSelection)
-            IconButton(
-              tooltip: deleteLabel,
-              onPressed: isSaving ? null : onDelete,
-              color: colorScheme.error,
-              icon: const Icon(Icons.delete_outline_rounded),
-            ),
-        ],
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (hasSelection)
+              IconButton(
+                tooltip: sendToBackLabel,
+                onPressed: isSaving ? null : onSendToBack,
+                icon: const Icon(Icons.vertical_align_bottom_rounded),
+              ),
+            if (hasSelection)
+              IconButton(
+                tooltip: bringToFrontLabel,
+                onPressed: isSaving ? null : onBringToFront,
+                icon: const Icon(Icons.vertical_align_top_rounded),
+              ),
+            if (hasSelection)
+              IconButton(
+                tooltip: copyLabel,
+                onPressed: isSaving ? null : onCopy,
+                icon: const Icon(Icons.copy_rounded),
+              ),
+            if (hasSelection)
+              IconButton(
+                tooltip: cutLabel,
+                onPressed: isSaving ? null : onCut,
+                icon: const Icon(Icons.content_cut_rounded),
+              ),
+            if (hasClipboard)
+              IconButton(
+                tooltip: pasteLabel,
+                onPressed: isSaving ? null : onPaste,
+                icon: const Icon(Icons.content_paste_rounded),
+              ),
+            if (hasSelection)
+              IconButton(
+                tooltip: deleteLabel,
+                onPressed: isSaving ? null : onDelete,
+                color: colorScheme.error,
+                icon: const Icon(Icons.delete_outline_rounded),
+              ),
+          ],
+        ),
       ),
     );
   }

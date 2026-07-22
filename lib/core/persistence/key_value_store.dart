@@ -1,7 +1,10 @@
+// Copy all content into key_value_store.dart.
 enum PersistenceKey {
   notebooks,
   pages,
   strokes,
+  textObjects,
+  imageObjects,
   folders,
   settings,
   lastSession,
