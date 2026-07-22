@@ -1,4 +1,6 @@
+// Copy all content into drawing_canvas.dart.
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +27,7 @@ final class DrawingCanvas extends ConsumerStatefulWidget {
   ConsumerState<DrawingCanvas> createState() => _DrawingCanvasState();
 }
 
-enum _SelectionGesture { none, lasso, move, resize }
+enum _SelectionGesture { none, lasso, move, resize, rotate }
 
 final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
   static const _straightenDelay = Duration(seconds: 3);
@@ -37,6 +39,7 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
   Timer? _straightenTimer;
   Offset? _lastAnchorPosition;
   Offset? _resizeCenter;
+  Offset? _rotateCenter;
   bool _isStraightened = false;
   _SelectionGesture _selectionGesture = _SelectionGesture.none;
 
@@ -181,10 +184,27 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
     _isStraightened = false;
     _lastAnchorPosition = null;
 
+    if (selectionBounds != null) {
+      final rotateHandle = selectionRotateHandleFor(selectionBounds);
+
+      if ((position - rotateHandle).distance <= _resizeHandleHitRadius) {
+        _selectionGesture = _SelectionGesture.rotate;
+        _rotateCenter = selectionBounds.center;
+        controller.beginSelectionRotate(
+          angleRadians: math.atan2(
+            position.dy - selectionBounds.center.dy,
+            position.dx - selectionBounds.center.dx,
+          ),
+        );
+        return;
+      }
+    }
+
     if (selectionBounds != null &&
         _isResizeHandleHit(position, selectionBounds)) {
       _selectionGesture = _SelectionGesture.resize;
       _resizeCenter = selectionBounds.center;
+      _rotateCenter = null;
       controller.beginSelectionResize(
         distance: (position - selectionBounds.center).distance,
       );
@@ -193,12 +213,15 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
 
     if (selectionBounds != null && selectionBounds.contains(position)) {
       _selectionGesture = _SelectionGesture.move;
+      _resizeCenter = null;
+      _rotateCenter = null;
       controller.beginSelectionDrag(x: position.dx, y: position.dy);
       return;
     }
 
     _selectionGesture = _SelectionGesture.lasso;
     _resizeCenter = null;
+    _rotateCenter = null;
     controller.beginLasso(
       x: position.dx,
       y: position.dy,
@@ -226,6 +249,16 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
             distance: (position - center).distance,
           );
         }
+      case _SelectionGesture.rotate:
+        final center = _rotateCenter;
+        if (center != null) {
+          controller.updateSelectionRotate(
+            angleRadians: math.atan2(
+              position.dy - center.dy,
+              position.dx - center.dx,
+            ),
+          );
+        }
       case _SelectionGesture.none:
         break;
     }
@@ -241,12 +274,15 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
         unawaited(controller.endSelectionDrag());
       case _SelectionGesture.resize:
         unawaited(controller.endSelectionResize());
+      case _SelectionGesture.rotate:
+        unawaited(controller.endSelectionRotate());
       case _SelectionGesture.none:
         break;
     }
 
     _selectionGesture = _SelectionGesture.none;
     _resizeCenter = null;
+    _rotateCenter = null;
   }
 
   bool _isResizeHandleHit(Offset position, Rect bounds) {

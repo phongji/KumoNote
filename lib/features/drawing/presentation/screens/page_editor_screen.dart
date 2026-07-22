@@ -197,7 +197,14 @@ final class PageEditorScreen extends ConsumerWidget {
                         children: [
                           InkColorPicker(
                             selectedColorValue: state.colorValue,
-                            onSelected: controller.setColor,
+                            onSelected: (colorValue) {
+                              if (state.hasSelection) {
+                                controller.recolorSelection(colorValue);
+                                return;
+                              }
+
+                              controller.setColor(colorValue);
+                            },
                           ),
                         ],
                       ),
@@ -220,30 +227,14 @@ final class PageEditorScreen extends ConsumerWidget {
                   hasSelection: state.hasSelection,
                   hasClipboard: state.hasClipboard,
                   isSaving: state.isSaving,
-                  moveLabel: strings.moveSelection,
                   copyLabel: strings.copySelection,
+                  cutLabel: strings.cutSelection,
                   pasteLabel: strings.pasteSelection,
                   deleteLabel: strings.deleteSelection,
-                  resizeLabel: strings.resizeSelection,
                   onCopy: controller.copySelection,
+                  onCut: controller.cutSelection,
                   onPaste: controller.pasteSelection,
                   onDelete: controller.deleteSelection,
-                  onTransform: (action) {
-                    switch (action) {
-                      case SelectionTransformAction.moveLeft:
-                        controller.moveSelection(deltaX: -12, deltaY: 0);
-                      case SelectionTransformAction.moveRight:
-                        controller.moveSelection(deltaX: 12, deltaY: 0);
-                      case SelectionTransformAction.moveUp:
-                        controller.moveSelection(deltaX: 0, deltaY: -12);
-                      case SelectionTransformAction.moveDown:
-                        controller.moveSelection(deltaX: 0, deltaY: 12);
-                      case SelectionTransformAction.shrink:
-                        controller.scaleSelection(0.9);
-                      case SelectionTransformAction.enlarge:
-                        controller.scaleSelection(1.1);
-                    }
-                  },
                 ),
               );
             },

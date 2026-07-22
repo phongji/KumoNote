@@ -1,7 +1,11 @@
+// Copy all content into selection_overlay_painter.dart.
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/ink_point.dart';
 import '../../domain/entities/ink_stroke.dart';
+
+const selectionRotateHandleOffset = 34.0;
+const selectionHandleRadius = 7.0;
 
 Rect? calculateSelectionBounds(
   List<InkStroke> selectedStrokes, {
@@ -34,13 +38,15 @@ Rect? calculateSelectionBounds(
   );
 }
 
+Offset selectionRotateHandleFor(Rect bounds) {
+  return Offset(bounds.center.dx, bounds.top - selectionRotateHandleOffset);
+}
+
 final class SelectionOverlayPainter extends CustomPainter {
   const SelectionOverlayPainter({
     required this.lassoPoints,
     required this.selectedStrokes,
   });
-
-  static const handleRadius = 7.0;
 
   final List<InkPoint> lassoPoints;
   final List<InkStroke> selectedStrokes;
@@ -79,15 +85,14 @@ final class SelectionOverlayPainter extends CustomPainter {
       return;
     }
 
-    final fillPaint = Paint()
-      ..color = const Color(0xFF718D99).withValues(alpha: 0.07)
-      ..style = PaintingStyle.fill;
-
+    final accent = const Color(0xFF718D99);
     final borderPaint = Paint()
-      ..color = const Color(0xFF718D99)
+      ..color = accent
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
-
+    final fillPaint = Paint()
+      ..color = accent.withValues(alpha: 0.07)
+      ..style = PaintingStyle.fill;
     final roundedBounds = RRect.fromRectAndRadius(
       bounds,
       const Radius.circular(6),
@@ -96,41 +101,63 @@ final class SelectionOverlayPainter extends CustomPainter {
     canvas.drawRRect(roundedBounds, fillPaint);
     canvas.drawRRect(roundedBounds, borderPaint);
 
-    for (final corner in _cornersOf(bounds)) {
-      _paintResizeHandle(canvas, corner);
-    }
-  }
+    final rotateHandle = selectionRotateHandleFor(bounds);
+    canvas.drawLine(bounds.topCenter, rotateHandle, borderPaint);
 
-  List<Offset> _cornersOf(Rect bounds) {
-    return [
+    for (final corner in [
       bounds.topLeft,
       bounds.topRight,
       bounds.bottomLeft,
       bounds.bottomRight,
-    ];
+    ]) {
+      _paintHandle(canvas, corner, showRotateMark: false);
+    }
+
+    _paintHandle(canvas, rotateHandle, showRotateMark: true);
   }
 
-  void _paintResizeHandle(Canvas canvas, Offset center) {
+  void _paintHandle(
+    Canvas canvas,
+    Offset center, {
+    required bool showRotateMark,
+  }) {
+    final accent = const Color(0xFF718D99);
     final shadowPaint = Paint()
       ..color = Colors.black.withValues(alpha: 0.12)
       ..style = PaintingStyle.fill;
-
     final fillPaint = Paint()
       ..color = const Color(0xFFFAF9F5)
       ..style = PaintingStyle.fill;
-
     final borderPaint = Paint()
-      ..color = const Color(0xFF718D99)
+      ..color = accent
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
     canvas.drawCircle(
       center + const Offset(0, 1),
-      handleRadius + 1,
+      selectionHandleRadius + 1,
       shadowPaint,
     );
-    canvas.drawCircle(center, handleRadius, fillPaint);
-    canvas.drawCircle(center, handleRadius, borderPaint);
+    canvas.drawCircle(center, selectionHandleRadius, fillPaint);
+    canvas.drawCircle(center, selectionHandleRadius, borderPaint);
+
+    if (!showRotateMark) {
+      return;
+    }
+
+    final rotatePaint = Paint()
+      ..color = accent
+      ..strokeWidth = 1.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+    final rotateRect = Rect.fromCircle(center: center, radius: 3.4);
+
+    canvas.drawArc(rotateRect, -2.5, 4.3, false, rotatePaint);
+    canvas.drawLine(
+      center + const Offset(3.2, 1.4),
+      center + const Offset(4.8, 0.8),
+      rotatePaint,
+    );
   }
 
   @override

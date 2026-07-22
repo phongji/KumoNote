@@ -1,5 +1,5 @@
-// Complete drawing controller for Kumo Notes.
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
@@ -39,6 +39,9 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
   List<InkStroke>? _selectionResizeBeforeStrokes;
   double? _selectionResizeLastDistance;
   bool _selectionResizeChanged = false;
+  List<InkStroke>? _selectionRotateBeforeStrokes;
+  double? _selectionRotateLastAngle;
+  bool _selectionRotateChanged = false;
 
   @override
   Future<DrawingState> build() async {
@@ -331,6 +334,7 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
     state = AsyncData(
       current.copyWith(
         selection: selection.copyWith(
+          lassoPoints: const [],
           selectedStrokeIds: selectedIds,
           isDrawingLasso: false,
         ),
@@ -490,6 +494,82 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
     );
   }
 
+  void beginSelectionRotate({required double angleRadians}) {
+    final current = state.requireValue;
+
+    if (current.isSaving || !current.hasSelection) {
+      return;
+    }
+
+    _selectionRotateBeforeStrokes = current.strokes;
+    _selectionRotateLastAngle = angleRadians;
+    _selectionRotateChanged = false;
+  }
+
+  void updateSelectionRotate({required double angleRadians}) {
+    final lastAngle = _selectionRotateLastAngle;
+
+    if (lastAngle == null) {
+      return;
+    }
+
+    var angleDelta = angleRadians - lastAngle;
+
+    while (angleDelta > math.pi) {
+      angleDelta -= math.pi * 2;
+    }
+    while (angleDelta < -math.pi) {
+      angleDelta += math.pi * 2;
+    }
+
+    if (angleDelta.abs() < 0.0001) {
+      return;
+    }
+
+    final current = state.requireValue;
+    final updatedStrokes = _selectionTransformer.rotate(
+      strokes: current.strokes,
+      selectedIds: current.selection.selectedStrokeIds,
+      angleRadians: angleDelta,
+    );
+
+    _selectionRotateLastAngle = angleRadians;
+    _selectionRotateChanged = true;
+
+    state = AsyncData(current.copyWith(strokes: updatedStrokes));
+  }
+
+  Future<void> endSelectionRotate() async {
+    final beforeStrokes = _selectionRotateBeforeStrokes;
+    final changed = _selectionRotateChanged;
+
+    _selectionRotateBeforeStrokes = null;
+    _selectionRotateLastAngle = null;
+    _selectionRotateChanged = false;
+
+    if (beforeStrokes == null || !changed) {
+      return;
+    }
+
+    final current = state.requireValue;
+    final historyEntry = DrawingHistoryEntry(
+      beforeStrokes: beforeStrokes,
+      afterStrokes: current.strokes,
+    );
+
+    state = AsyncData(
+      current.copyWith(
+        undoHistory: [...current.undoHistory, historyEntry],
+        redoHistory: const [],
+        isSaving: true,
+      ),
+    );
+
+    await _persistHistoryState(
+      errorMessage: 'Unable to rotate the selected strokes.',
+    );
+  }
+
   Future<void> moveSelection({
     required double deltaX,
     required double deltaY,
@@ -582,6 +662,17 @@ final class DrawingController extends AsyncNotifier<DrawingState> {
     );
 
     await _persistHistoryState(errorMessage: errorMessage);
+  }
+
+  Future<void> cutSelection() async {
+    final current = state.requireValue;
+
+    if (current.isSaving || !current.hasSelection) {
+      return;
+    }
+
+    copySelection();
+    await deleteSelection();
   }
 
   void copySelection() {

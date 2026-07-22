@@ -1,3 +1,4 @@
+// Copy all content into stroke_selection_transformer.dart.
 import '../entities/ink_stroke.dart';
 
 final class StrokeSelectionTransformer {
@@ -41,33 +42,11 @@ final class StrokeSelectionTransformer {
       return strokes;
     }
 
-    final selectedStrokes = strokes
-        .where((stroke) => selectedIds.contains(stroke.id))
-        .toList();
+    final center = _selectionCenter(strokes: strokes, selectedIds: selectedIds);
 
-    final selectedPoints = selectedStrokes
-        .expand((stroke) => stroke.points)
-        .toList();
-
-    if (selectedPoints.isEmpty) {
+    if (center == null) {
       return strokes;
     }
-
-    final minimumX = selectedPoints
-        .map((point) => point.x)
-        .reduce((first, second) => first < second ? first : second);
-    final maximumX = selectedPoints
-        .map((point) => point.x)
-        .reduce((first, second) => first > second ? first : second);
-    final minimumY = selectedPoints
-        .map((point) => point.y)
-        .reduce((first, second) => first < second ? first : second);
-    final maximumY = selectedPoints
-        .map((point) => point.y)
-        .reduce((first, second) => first > second ? first : second);
-
-    final centerX = (minimumX + maximumX) / 2;
-    final centerY = (minimumY + maximumY) / 2;
 
     return strokes.map((stroke) {
       if (!selectedIds.contains(stroke.id)) {
@@ -75,9 +54,33 @@ final class StrokeSelectionTransformer {
       }
 
       return stroke.scaleAround(
-        centerX: centerX,
-        centerY: centerY,
+        centerX: center.x,
+        centerY: center.y,
         scale: scale,
+      );
+    }).toList();
+  }
+
+  List<InkStroke> rotate({
+    required List<InkStroke> strokes,
+    required Set<String> selectedIds,
+    required double angleRadians,
+  }) {
+    final center = _selectionCenter(strokes: strokes, selectedIds: selectedIds);
+
+    if (center == null) {
+      return strokes;
+    }
+
+    return strokes.map((stroke) {
+      if (!selectedIds.contains(stroke.id)) {
+        return stroke;
+      }
+
+      return stroke.rotateAround(
+        centerX: center.x,
+        centerY: center.y,
+        angleRadians: angleRadians,
       );
     }).toList();
   }
@@ -113,4 +116,43 @@ final class StrokeSelectionTransformer {
 
     return [...strokes, ...pastedStrokes];
   }
+
+  _SelectionCenter? _selectionCenter({
+    required List<InkStroke> strokes,
+    required Set<String> selectedIds,
+  }) {
+    final points = strokes
+        .where((stroke) => selectedIds.contains(stroke.id))
+        .expand((stroke) => stroke.points)
+        .toList();
+
+    if (points.isEmpty) {
+      return null;
+    }
+
+    final minimumX = points
+        .map((point) => point.x)
+        .reduce((first, second) => first < second ? first : second);
+    final maximumX = points
+        .map((point) => point.x)
+        .reduce((first, second) => first > second ? first : second);
+    final minimumY = points
+        .map((point) => point.y)
+        .reduce((first, second) => first < second ? first : second);
+    final maximumY = points
+        .map((point) => point.y)
+        .reduce((first, second) => first > second ? first : second);
+
+    return _SelectionCenter(
+      x: (minimumX + maximumX) / 2,
+      y: (minimumY + maximumY) / 2,
+    );
+  }
+}
+
+final class _SelectionCenter {
+  const _SelectionCenter({required this.x, required this.y});
+
+  final double x;
+  final double y;
 }

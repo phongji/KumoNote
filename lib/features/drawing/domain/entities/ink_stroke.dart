@@ -1,3 +1,6 @@
+// Copy all content into ink_stroke.dart.
+import 'dart:math' as math;
+
 import 'ink_point.dart';
 
 enum InkTool { pen, pencil, highlighter, eraser }
@@ -93,6 +96,29 @@ final class InkStroke {
         );
       }).toList(),
       createdAt: createdAt,
+    );
+  }
+
+  InkStroke rotateAround({
+    required double centerX,
+    required double centerY,
+    required double angleRadians,
+  }) {
+    final cosine = math.cos(angleRadians);
+    final sine = math.sin(angleRadians);
+
+    return replacePoints(
+      points.map((point) {
+        final translatedX = point.x - centerX;
+        final translatedY = point.y - centerY;
+
+        return InkPoint(
+          x: centerX + translatedX * cosine - translatedY * sine,
+          y: centerY + translatedX * sine + translatedY * cosine,
+          pressure: point.pressure,
+          elapsedMicroseconds: point.elapsedMicroseconds,
+        );
+      }).toList(),
     );
   }
 
