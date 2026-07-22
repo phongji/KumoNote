@@ -1,10 +1,11 @@
+// Copy all content into drawing_state.dart.
 import '../../domain/entities/ink_stroke.dart';
 import 'drawing_history_entry.dart';
 import 'stroke_selection_state.dart';
 
 enum EraserMode { partial, wholeStroke }
 
-enum CanvasInteractionMode { ink, lasso }
+enum CanvasInteractionMode { ink, lasso, navigation }
 
 final class DrawingState {
   DrawingState({
@@ -58,7 +59,13 @@ final class DrawingState {
     return activeStroke == null && !isSaving && redoHistory.isNotEmpty;
   }
 
+  bool get isInkMode => interactionMode == CanvasInteractionMode.ink;
+
   bool get isLassoMode => interactionMode == CanvasInteractionMode.lasso;
+
+  bool get isNavigationMode {
+    return interactionMode == CanvasInteractionMode.navigation;
+  }
 
   bool get hasSelection => selection.hasSelection;
 

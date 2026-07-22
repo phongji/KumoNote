@@ -6,6 +6,7 @@ import '../../../page/domain/entities/note_page.dart';
 import '../../application/controllers/drawing_controller.dart';
 import '../../application/state/drawing_state.dart';
 import '../../domain/entities/ink_stroke.dart';
+import '../widgets/canvas_viewport.dart';
 import '../widgets/drawing_canvas.dart';
 import '../widgets/eraser_mode_picker.dart';
 import '../widgets/ink_color_picker.dart';
@@ -112,7 +113,7 @@ final class PageEditorScreen extends ConsumerWidget {
                             tooltip: strings.pen,
                             style: selectedButtonStyle,
                             isSelected:
-                                !state.isLassoMode &&
+                                state.isInkMode &&
                                 state.selectedTool == InkTool.pen,
                             onPressed: () {
                               controller.selectTool(InkTool.pen);
@@ -124,7 +125,7 @@ final class PageEditorScreen extends ConsumerWidget {
                             tooltip: strings.pencil,
                             style: selectedButtonStyle,
                             isSelected:
-                                !state.isLassoMode &&
+                                state.isInkMode &&
                                 state.selectedTool == InkTool.pencil,
                             onPressed: () {
                               controller.selectTool(InkTool.pencil);
@@ -136,7 +137,7 @@ final class PageEditorScreen extends ConsumerWidget {
                             tooltip: strings.highlighter,
                             style: selectedButtonStyle,
                             isSelected:
-                                !state.isLassoMode &&
+                                state.isInkMode &&
                                 state.selectedTool == InkTool.highlighter,
                             onPressed: () {
                               controller.selectTool(InkTool.highlighter);
@@ -152,7 +153,7 @@ final class PageEditorScreen extends ConsumerWidget {
                           EraserModePicker(
                             selectedMode: state.eraserMode,
                             isEraserSelected:
-                                !state.isLassoMode &&
+                                state.isInkMode &&
                                 state.selectedTool == InkTool.eraser,
                             onSelectEraser: () {
                               controller.selectTool(InkTool.eraser);
@@ -180,6 +181,20 @@ final class PageEditorScreen extends ConsumerWidget {
                             },
                             icon: const Icon(Icons.gesture_outlined),
                             selectedIcon: const Icon(Icons.gesture),
+                          ),
+                          IconButton(
+                            tooltip: strings.moveSelection,
+                            style: selectedButtonStyle,
+                            isSelected: state.isNavigationMode,
+                            onPressed: () {
+                              controller.setInteractionMode(
+                                state.isNavigationMode
+                                    ? CanvasInteractionMode.ink
+                                    : CanvasInteractionMode.navigation,
+                              );
+                            },
+                            icon: const Icon(Icons.pan_tool_outlined),
+                            selectedIcon: const Icon(Icons.pan_tool),
                           ),
                         ],
                       ),
@@ -243,26 +258,31 @@ final class PageEditorScreen extends ConsumerWidget {
           Expanded(
             child: ColoredBox(
               color: Theme.of(context).colorScheme.surfaceContainerLowest,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Material(
-                    elevation: 3,
-                    shadowColor: Colors.black.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(4),
-                    clipBehavior: Clip.antiAlias,
-                    child: SizedBox(
-                      width: page.width,
-                      height: page.height,
-                      child: DrawingCanvas(
-                        pageId: page.id,
-                        template: page.template,
-                        paperColor: page.paperColor,
+              child: drawing.maybeWhen(
+                data: (state) {
+                  return CanvasViewport(
+                    navigationEnabled: state.isNavigationMode,
+                    child: Padding(
+                      padding: const EdgeInsets.all(72),
+                      child: Material(
+                        elevation: 3,
+                        shadowColor: Colors.black.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(4),
+                        clipBehavior: Clip.antiAlias,
+                        child: SizedBox(
+                          width: page.width,
+                          height: page.height,
+                          child: DrawingCanvas(
+                            pageId: page.id,
+                            template: page.template,
+                            paperColor: page.paperColor,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
+                orElse: () => const Center(child: CircularProgressIndicator()),
               ),
             ),
           ),

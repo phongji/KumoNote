@@ -70,6 +70,11 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
           child: Listener(
             behavior: HitTestBehavior.opaque,
             onPointerDown: (event) {
+              if (state.isNavigationMode) {
+                _cancelActiveGesture();
+                return;
+              }
+
               _strokeClock
                 ..reset()
                 ..start();
@@ -96,6 +101,10 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               _scheduleStraighten();
             },
             onPointerMove: (event) {
+              if (state.isNavigationMode) {
+                return;
+              }
+
               if (state.isLassoMode) {
                 _updateSelectionGesture(
                   position: event.localPosition,
@@ -125,6 +134,11 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               }
             },
             onPointerUp: (_) {
+              if (state.isNavigationMode) {
+                _cancelActiveGesture();
+                return;
+              }
+
               if (state.isLassoMode) {
                 _finishSelectionGesture(controller);
                 return;
@@ -132,6 +146,11 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               _finishStroke();
             },
             onPointerCancel: (_) {
+              if (state.isNavigationMode) {
+                _cancelActiveGesture();
+                return;
+              }
+
               if (state.isLassoMode) {
                 _finishSelectionGesture(controller);
                 return;
@@ -310,6 +329,17 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
           .read(drawingControllerProvider(widget.pageId).notifier)
           .straightenActiveStroke();
     });
+  }
+
+  void _cancelActiveGesture() {
+    _straightenTimer?.cancel();
+    _straightenTimer = null;
+    _lastAnchorPosition = null;
+    _resizeCenter = null;
+    _rotateCenter = null;
+    _isStraightened = false;
+    _selectionGesture = _SelectionGesture.none;
+    _strokeClock.stop();
   }
 
   double _normalizedPressure(PointerEvent event) {
