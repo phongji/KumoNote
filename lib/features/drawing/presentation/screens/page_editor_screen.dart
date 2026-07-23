@@ -6,6 +6,7 @@ import 'package:kumo_note/l10n/app_localizations.dart';
 import '../../../image/application/controllers/image_object_controller.dart';
 import '../../../image/application/services/image_import_service.dart';
 import '../../../page/domain/entities/note_page.dart';
+import '../../../export/application/services/page_image_export_service.dart';
 import '../../../text/application/controllers/text_object_controller.dart';
 import '../../../text/presentation/widgets/add_text_dialog.dart';
 import '../../application/controllers/drawing_controller.dart';
@@ -17,6 +18,8 @@ import '../widgets/eraser_mode_picker.dart';
 import '../widgets/ink_color_picker.dart';
 import '../widgets/selection_action_bar.dart';
 import '../widgets/stroke_width_picker.dart';
+
+final _pageExportBoundaryKeys = <String, GlobalKey>{};
 
 final class PageEditorScreen extends ConsumerWidget {
   const PageEditorScreen({
@@ -32,6 +35,10 @@ final class PageEditorScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final strings = AppLocalizations.of(context)!;
     final drawing = ref.watch(drawingControllerProvider(page.id));
+    final exportBoundaryKey = _pageExportBoundaryKeys.putIfAbsent(
+      page.id,
+      () => GlobalKey(),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -54,6 +61,42 @@ final class PageEditorScreen extends ConsumerWidget {
                     tooltip: strings.redo,
                     onPressed: state.canRedo ? controller.redo : null,
                     icon: const Icon(Icons.redo),
+                  ),
+                  IconButton(
+                    tooltip:
+                        Localizations.localeOf(context).languageCode == 'th'
+                        ? 'ส่งออกหน้านี้เป็น PNG'
+                        : 'Export this page as PNG',
+                    onPressed: state.isSaving
+                        ? null
+                        : () async {
+                            try {
+                              await const PageImageExportService().exportPng(
+                                boundaryKey: exportBoundaryKey,
+                                fileName: 'Kumo-Note-page-$pageNumber',
+                              );
+                            } catch (error, stackTrace) {
+                              debugPrint('PAGE EXPORT ERROR: $error');
+                              debugPrintStack(stackTrace: stackTrace);
+
+                              if (!context.mounted) {
+                                return;
+                              }
+
+                              final message =
+                                  Localizations.localeOf(
+                                        context,
+                                      ).languageCode ==
+                                      'th'
+                                  ? 'ยังส่งออกหน้านี้ไม่ได้ กรุณาลองอีกครั้ง'
+                                  : 'This page could not be exported. Please try again.';
+
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text(message)));
+                            }
+                          },
+                    icon: const Icon(Icons.ios_share_outlined),
                   ),
                   if (state.isSaving)
                     const Padding(
@@ -409,6 +452,7 @@ final class PageEditorScreen extends ConsumerWidget {
                           height: page.height,
                           child: DrawingCanvas(
                             pageId: page.id,
+                            exportBoundaryKey: exportBoundaryKey,
                             template: page.template,
                             paperColor: page.paperColor,
                             pdfDocumentId: page.pdfDocumentId,

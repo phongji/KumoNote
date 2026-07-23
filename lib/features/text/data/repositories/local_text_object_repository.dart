@@ -21,6 +21,33 @@ final class LocalTextObjectRepository implements TextObjectRepository {
   }
 
   @override
+  Future<Map<String, List<TextObject>>> getObjectsForPages(
+    Set<String> pageIds,
+  ) async {
+    final grouped = <String, List<TextObject>>{
+      for (final pageId in pageIds) pageId: <TextObject>[],
+    };
+
+    if (pageIds.isEmpty) {
+      return grouped;
+    }
+
+    final objects = await _readAll();
+
+    for (final object in objects) {
+      grouped[object.pageId]?.add(object);
+    }
+
+    for (final pageObjects in grouped.values) {
+      pageObjects.sort(
+        (first, second) => first.createdAt.compareTo(second.createdAt),
+      );
+    }
+
+    return grouped;
+  }
+
+  @override
   Future<List<TextObject>> search(String query) async {
     final normalizedQuery = query.trim().toLowerCase();
 

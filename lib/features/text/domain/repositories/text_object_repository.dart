@@ -3,6 +3,8 @@ import '../entities/text_object.dart';
 abstract interface class TextObjectRepository {
   Future<List<TextObject>> getObjectsForPage(String pageId);
 
+  Future<Map<String, List<TextObject>>> getObjectsForPages(Set<String> pageIds);
+
   Future<List<TextObject>> search(String query);
 
   Future<TextObject?> getById(String objectId);

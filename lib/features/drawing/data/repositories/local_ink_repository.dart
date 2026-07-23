@@ -21,6 +21,33 @@ final class LocalInkRepository implements InkRepository {
   }
 
   @override
+  Future<Map<String, List<InkStroke>>> getStrokesForPages(
+    Set<String> pageIds,
+  ) async {
+    final grouped = <String, List<InkStroke>>{
+      for (final pageId in pageIds) pageId: <InkStroke>[],
+    };
+
+    if (pageIds.isEmpty) {
+      return grouped;
+    }
+
+    final strokes = await _readAll();
+
+    for (final stroke in strokes) {
+      grouped[stroke.pageId]?.add(stroke);
+    }
+
+    for (final pageStrokes in grouped.values) {
+      pageStrokes.sort(
+        (first, second) => first.createdAt.compareTo(second.createdAt),
+      );
+    }
+
+    return grouped;
+  }
+
+  @override
   Future<InkStroke?> getById(String strokeId) async {
     final strokes = await _readAll();
 

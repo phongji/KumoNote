@@ -4,12 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../export/application/providers/export_providers.dart';
+import '../../../page/domain/entities/note_page.dart';
 import '../../../pdf/application/pdf_providers.dart';
 import '../../application/controllers/page_controller.dart' as page_app;
 import '../../application/providers/page_providers.dart';
 import '../widgets/notebook_contents.dart';
 import '../widgets/page_setup_dialog.dart';
 import 'page_trash_screen.dart';
+
+enum _NotebookFileAction { importPdf, exportPdf }
 
 final class NotebookScreen extends ConsumerStatefulWidget {
   const NotebookScreen({
@@ -29,6 +33,11 @@ final class NotebookScreen extends ConsumerStatefulWidget {
 
 final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
   bool _isImportingPdf = false;
+  bool _isExportingPdf = false;
+  int _exportedPageCount = 0;
+  int _exportTotalPageCount = 0;
+
+  bool get _isHandlingFile => _isImportingPdf || _isExportingPdf;
 
   @override
   Widget build(BuildContext context) {
@@ -38,25 +47,71 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
     final controller = ref.read(
       page_app.pageControllerProvider(widget.notebookId),
     );
+    final pageItems = pages.asData?.value ?? const <NotePage>[];
 
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.notebookName),
         actions: [
-          IconButton(
-            tooltip: strings.importPdf,
-            onPressed: _isImportingPdf
-                ? null
-                : () async {
-                    await _importPdf(controller);
-                  },
-            icon: _isImportingPdf
-                ? const SizedBox.square(
+          if (_isHandlingFile)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox.square(
                     dimension: 20,
                     child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.picture_as_pdf_outlined),
-          ),
+                  ),
+                  if (_isExportingPdf && _exportTotalPageCount > 0) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      '$_exportedPageCount/$_exportTotalPageCount',
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                  ],
+                ],
+              ),
+            )
+          else
+            PopupMenuButton<_NotebookFileAction>(
+              tooltip: strings.moreActions,
+              icon: const Icon(Icons.file_open_outlined),
+              onSelected: (action) {
+                switch (action) {
+                  case _NotebookFileAction.importPdf:
+                    unawaited(_importPdf(controller));
+                    break;
+                  case _NotebookFileAction.exportPdf:
+                    unawaited(_exportPdf(pageItems));
+                    break;
+                }
+              },
+              itemBuilder: (context) {
+                final isThai =
+                    Localizations.localeOf(context).languageCode == 'th';
+
+                return [
+                  PopupMenuItem(
+                    value: _NotebookFileAction.importPdf,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.picture_as_pdf_outlined),
+                      title: Text(strings.importPdf),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: _NotebookFileAction.exportPdf,
+                    enabled: pageItems.isNotEmpty,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.ios_share_outlined),
+                      title: Text(isThai ? 'ส่งออกเป็น PDF' : 'Export as PDF'),
+                    ),
+                  ),
+                ];
+              },
+            ),
           IconButton(
             tooltip: strings.trash,
             onPressed: () {
@@ -108,7 +163,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
   }
 
   Future<void> _importPdf(page_app.PageController controller) async {
-    if (_isImportingPdf) {
+    if (_isHandlingFile) {
       return;
     }
 
@@ -152,6 +207,66 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
       if (mounted) {
         setState(() {
           _isImportingPdf = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _exportPdf(List<NotePage> pages) async {
+    if (_isHandlingFile || pages.isEmpty) {
+      return;
+    }
+
+    setState(() {
+      _isExportingPdf = true;
+      _exportedPageCount = 0;
+      _exportTotalPageCount = pages.length;
+    });
+
+    try {
+      await ref
+          .read(notebookPdfExportServiceProvider)
+          .export(
+            notebookName: widget.notebookName,
+            pages: pages,
+            onProgress: (completed, total) {
+              if (!mounted) {
+                return;
+              }
+
+              setState(() {
+                _exportedPageCount = completed;
+                _exportTotalPageCount = total;
+              });
+            },
+          );
+    } catch (error, stackTrace) {
+      debugPrint('PDF EXPORT ERROR: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) {
+        return;
+      }
+
+      final isThai = Localizations.localeOf(context).languageCode == 'th';
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              isThai
+                  ? 'ยังส่งออกสมุดนี้ไม่ได้ กรุณาลองอีกครั้ง'
+                  : 'This notebook could not be exported. Please try again.',
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isExportingPdf = false;
+          _exportedPageCount = 0;
+          _exportTotalPageCount = 0;
         });
       }
     }

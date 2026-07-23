@@ -29,6 +29,33 @@ final class LocalImageObjectRepository implements ImageObjectRepository {
   }
 
   @override
+  Future<Map<String, List<ImageObject>>> getByPageIds(
+    Set<String> pageIds,
+  ) async {
+    final grouped = <String, List<ImageObject>>{
+      for (final pageId in pageIds) pageId: <ImageObject>[],
+    };
+
+    if (pageIds.isEmpty) {
+      return grouped;
+    }
+
+    final objects = await _readAll();
+
+    for (final object in objects) {
+      grouped[object.pageId]?.add(object);
+    }
+
+    for (final pageObjects in grouped.values) {
+      pageObjects.sort(
+        (first, second) => first.createdAt.compareTo(second.createdAt),
+      );
+    }
+
+    return grouped;
+  }
+
+  @override
   Future<ImageObject?> getById(String objectId) async {
     final objects = await _readAll();
 

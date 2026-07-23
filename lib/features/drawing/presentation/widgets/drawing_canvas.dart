@@ -16,6 +16,7 @@ import 'scene_object_layer.dart';
 final class DrawingCanvas extends ConsumerStatefulWidget {
   const DrawingCanvas({
     required this.pageId,
+    this.exportBoundaryKey,
     this.template = PageTemplate.blank,
     this.paperColor = PagePaperColor.paperWhite,
     this.pdfDocumentId,
@@ -27,6 +28,7 @@ final class DrawingCanvas extends ConsumerStatefulWidget {
        );
 
   final String pageId;
+  final GlobalKey? exportBoundaryKey;
   final PageTemplate template;
   final PagePaperColor paperColor;
   final String? pdfDocumentId;
@@ -174,49 +176,57 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               }
               _finishStroke();
             },
-            child: ColoredBox(
-              color: Color(widget.paperColor.colorValue),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (widget.pdfDocumentId case final documentId?)
-                    PdfPageBackground(
-                      documentId: documentId,
-                      pageNumber: widget.pdfPageNumber!,
-                    )
-                  else
-                    CustomPaint(
-                      painter: PaperTemplatePainter(
-                        template: widget.template,
-                        lineColor: const Color(
-                          0xFF7D8583,
-                        ).withValues(alpha: 0.34),
-                      ),
-                    ),
-                  SceneObjectLayer(
-                    pageId: widget.pageId,
-                    strokes: state.strokes,
-                    interactionMode: state.interactionMode,
-                  ),
-                  if (state.activeStroke != null)
-                    IgnorePointer(
-                      child: CustomPaint(
-                        painter: InkPainter(
-                          strokes: const [],
-                          activeStroke: state.activeStroke,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                RepaintBoundary(
+                  key: widget.exportBoundaryKey,
+                  child: ColoredBox(
+                    color: Color(widget.paperColor.colorValue),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (widget.pdfDocumentId case final documentId?)
+                          PdfPageBackground(
+                            documentId: documentId,
+                            pageNumber: widget.pdfPageNumber!,
+                          )
+                        else
+                          CustomPaint(
+                            painter: PaperTemplatePainter(
+                              template: widget.template,
+                              lineColor: const Color(
+                                0xFF7D8583,
+                              ).withValues(alpha: 0.34),
+                            ),
+                          ),
+                        SceneObjectLayer(
+                          pageId: widget.pageId,
+                          strokes: state.strokes,
+                          interactionMode: state.interactionMode,
                         ),
-                      ),
-                    ),
-                  IgnorePointer(
-                    child: CustomPaint(
-                      painter: SelectionOverlayPainter(
-                        lassoPoints: state.selection.lassoPoints,
-                        selectedStrokes: selectedStrokes,
-                      ),
+                        if (state.activeStroke != null)
+                          IgnorePointer(
+                            child: CustomPaint(
+                              painter: InkPainter(
+                                strokes: const [],
+                                activeStroke: state.activeStroke,
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+                IgnorePointer(
+                  child: CustomPaint(
+                    painter: SelectionOverlayPainter(
+                      lassoPoints: state.selection.lassoPoints,
+                      selectedStrokes: selectedStrokes,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         );
