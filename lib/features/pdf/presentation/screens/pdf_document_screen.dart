@@ -34,6 +34,22 @@ final class _PdfDocumentScreenState extends ConsumerState<PdfDocumentScreen> {
   Uint8List? _cachedBytes;
   PdfDocumentRefData? _documentRef;
 
+  @override
+  void initState() {
+    super.initState();
+    Future<void>.microtask(_ensureTextIndex);
+  }
+
+  Future<void> _ensureTextIndex() async {
+    try {
+      await ref
+          .read(pdfTextIndexServiceProvider)
+          .ensureIndexed(widget.document);
+    } catch (_) {
+      // The PDF remains readable when text extraction is unavailable.
+    }
+  }
+
   List<NotePage> get _orderedPages {
     final pages = [...widget.pages];
 

@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../pdf/application/pdf_providers.dart';
 import '../../../pdf/application/use_cases/import_pdf_to_notebook.dart';
+import '../../../pdf/domain/entities/pdf_document_entity.dart';
 import '../../domain/entities/note_page.dart';
 import '../providers/page_providers.dart';
 
@@ -50,6 +53,8 @@ final class PageController {
 
     _ref.invalidate(pdfDocumentListProvider(notebookId));
     _refreshLists();
+
+    unawaited(_indexPdfQuietly(result.document));
 
     return result;
   }
@@ -116,6 +121,9 @@ final class PageController {
     }
 
     await _ref.read(pdfDocumentRepositoryProvider).delete(documentId);
+
+    await _ref.read(pdfTextIndexServiceProvider).deleteIndex(documentId);
+
     _ref.invalidate(pdfDocumentListProvider(notebookId));
     _refreshLists();
   }
@@ -123,6 +131,14 @@ final class PageController {
   void reload() {
     _ref.invalidate(pdfDocumentListProvider(notebookId));
     _refreshLists();
+  }
+
+  Future<void> _indexPdfQuietly(PdfDocumentEntity document) async {
+    try {
+      await _ref.read(pdfTextIndexServiceProvider).ensureIndexed(document);
+    } catch (_) {
+      // PDF import remains usable even when text extraction is unavailable.
+    }
   }
 
   void _refreshLists() {

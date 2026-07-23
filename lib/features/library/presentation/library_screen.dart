@@ -444,6 +444,9 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
     final pdfResults = normalizedQuery.isEmpty
         ? null
         : ref.watch(libraryPdfFileSearchProvider(normalizedQuery));
+    final pdfTextResults = normalizedQuery.isEmpty
+        ? null
+        : ref.watch(libraryPdfTextSearchProvider(normalizedQuery));
 
     return CustomScrollView(
       slivers: [
@@ -560,6 +563,9 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
                   pdfResults:
                       pdfResults ??
                       const AsyncData<List<PdfFileSearchResult>>([]),
+                  pdfTextResults:
+                      pdfTextResults ??
+                      const AsyncData<List<LibrarySearchResult>>([]),
                   strings: widget.strings,
                   onRenameNotebook: widget.onRenameNotebook,
                   onToggleFavorite: widget.onToggleFavorite,
@@ -611,6 +617,7 @@ class _CombinedSearchResults extends StatelessWidget {
     required this.notebooks,
     required this.textResults,
     required this.pdfResults,
+    required this.pdfTextResults,
     required this.strings,
     required this.onRenameNotebook,
     required this.onToggleFavorite,
@@ -621,6 +628,7 @@ class _CombinedSearchResults extends StatelessWidget {
   final List<Notebook> notebooks;
   final AsyncValue<List<LibrarySearchResult>> textResults;
   final AsyncValue<List<PdfFileSearchResult>> pdfResults;
+  final AsyncValue<List<LibrarySearchResult>> pdfTextResults;
   final AppLocalizations strings;
   final ValueChanged<Notebook> onRenameNotebook;
   final ValueChanged<Notebook> onToggleFavorite;
@@ -636,58 +644,92 @@ class _CombinedSearchResults extends StatelessWidget {
           loading: () => _buildLoading(context),
           error: (_, _) => _buildError(context),
           data: (pdfFileResults) {
-            if (notebooks.isEmpty &&
-                insideResults.isEmpty &&
-                pdfFileResults.isEmpty) {
-              return _EmptySearchResult(
-                query: query,
-                searchLabel: strings.search,
-              );
-            }
+            return pdfTextResults.when(
+              loading: () => _buildLoading(context),
+              error: (_, _) => _buildError(context),
+              data: (pdfInsideResults) {
+                if (notebooks.isEmpty &&
+                    insideResults.isEmpty &&
+                    pdfFileResults.isEmpty &&
+                    pdfInsideResults.isEmpty) {
+                  return _EmptySearchResult(
+                    query: query,
+                    searchLabel: strings.search,
+                  );
+                }
 
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (notebooks.isNotEmpty)
-                  _NotebookGrid(
-                    notebooks: notebooks,
-                    onRenameNotebook: onRenameNotebook,
-                    onToggleFavorite: onToggleFavorite,
-                    onMoveToTrash: onMoveToTrash,
-                  ),
-                if (notebooks.isNotEmpty &&
-                    (pdfFileResults.isNotEmpty || insideResults.isNotEmpty))
-                  const SizedBox(height: 28),
-                if (pdfFileResults.isNotEmpty) ...[
-                  _SearchSectionTitle(
-                    icon: Icons.picture_as_pdf_outlined,
-                    label: strings.pdfDocument,
-                  ),
-                  const SizedBox(height: 10),
-                  for (final result in pdfFileResults)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _PdfSearchResultTile(
-                        result: result,
-                        pageCountLabel: strings.pdfPageCount(result.pageCount),
+                final hasNotebookSection = notebooks.isNotEmpty;
+                final hasPdfFileSection = pdfFileResults.isNotEmpty;
+                final hasTextSection = insideResults.isNotEmpty;
+                final hasPdfTextSection = pdfInsideResults.isNotEmpty;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    if (hasNotebookSection)
+                      _NotebookGrid(
+                        notebooks: notebooks,
+                        onRenameNotebook: onRenameNotebook,
+                        onToggleFavorite: onToggleFavorite,
+                        onMoveToTrash: onMoveToTrash,
                       ),
-                    ),
-                ],
-                if (pdfFileResults.isNotEmpty && insideResults.isNotEmpty)
-                  const SizedBox(height: 20),
-                if (insideResults.isNotEmpty) ...[
-                  _SearchSectionTitle(
-                    icon: Icons.text_snippet_outlined,
-                    label: strings.textTool,
-                  ),
-                  const SizedBox(height: 10),
-                  for (final result in insideResults)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: _InsideSearchResultTile(result: result),
-                    ),
-                ],
-              ],
+                    if (hasNotebookSection &&
+                        (hasPdfFileSection ||
+                            hasTextSection ||
+                            hasPdfTextSection))
+                      const SizedBox(height: 28),
+                    if (hasPdfFileSection) ...[
+                      _SearchSectionTitle(
+                        icon: Icons.picture_as_pdf_outlined,
+                        label: strings.pdfDocument,
+                      ),
+                      const SizedBox(height: 10),
+                      for (final result in pdfFileResults)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _PdfSearchResultTile(
+                            result: result,
+                            pageCountLabel: strings.pdfPageCount(
+                              result.pageCount,
+                            ),
+                          ),
+                        ),
+                    ],
+                    if (hasPdfFileSection &&
+                        (hasTextSection || hasPdfTextSection))
+                      const SizedBox(height: 20),
+                    if (hasTextSection) ...[
+                      _SearchSectionTitle(
+                        icon: Icons.text_snippet_outlined,
+                        label: strings.textTool,
+                      ),
+                      const SizedBox(height: 10),
+                      for (final result in insideResults)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _InsideSearchResultTile(result: result),
+                        ),
+                    ],
+                    if (hasTextSection && hasPdfTextSection)
+                      const SizedBox(height: 20),
+                    if (hasPdfTextSection) ...[
+                      _SearchSectionTitle(
+                        icon: Icons.find_in_page_outlined,
+                        label: '${strings.pdfDocument} • ${strings.textTool}',
+                      ),
+                      const SizedBox(height: 10),
+                      for (final result in pdfInsideResults)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: _InsideSearchResultTile(
+                            result: result,
+                            isPdf: true,
+                          ),
+                        ),
+                    ],
+                  ],
+                );
+              },
             );
           },
         );
@@ -794,9 +836,10 @@ class _PdfSearchResultTile extends StatelessWidget {
 }
 
 class _InsideSearchResultTile extends StatelessWidget {
-  const _InsideSearchResultTile({required this.result});
+  const _InsideSearchResultTile({required this.result, this.isPdf = false});
 
   final LibrarySearchResult result;
+  final bool isPdf;
 
   @override
   Widget build(BuildContext context) {
@@ -805,7 +848,10 @@ class _InsideSearchResultTile extends StatelessWidget {
     return Card(
       margin: EdgeInsets.zero,
       child: ListTile(
-        leading: Icon(Icons.notes_rounded, color: colorScheme.primary),
+        leading: Icon(
+          isPdf ? Icons.picture_as_pdf_outlined : Icons.notes_rounded,
+          color: colorScheme.primary,
+        ),
         title: Text(
           result.matchedText,
           maxLines: 2,
