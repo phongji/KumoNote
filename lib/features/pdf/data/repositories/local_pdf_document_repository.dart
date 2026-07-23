@@ -30,6 +30,26 @@ final class LocalPdfDocumentRepository implements PdfDocumentRepository {
   }
 
   @override
+  Future<List<PdfDocumentEntity>> searchByFileName(String query) async {
+    final normalizedQuery = query.trim().toLowerCase();
+
+    if (normalizedQuery.isEmpty) {
+      return const [];
+    }
+
+    final documents = await _readAll();
+    final matches = documents.where((document) {
+      return document.fileName.toLowerCase().contains(normalizedQuery);
+    }).toList();
+
+    matches.sort((first, second) {
+      return second.updatedAt.compareTo(first.updatedAt);
+    });
+
+    return matches;
+  }
+
+  @override
   Future<PdfDocumentEntity?> getById(String documentId) async {
     final documents = await _readAll();
 
@@ -87,6 +107,7 @@ final class LocalPdfDocumentRepository implements PdfDocumentRepository {
     }
 
     documents.removeWhere((document) => document.id == documentId);
+
     await _writeAll(documents);
     await pdfDataStore.delete(removedDocument.storageKey);
   }

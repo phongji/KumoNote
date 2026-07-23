@@ -1,4 +1,3 @@
-// Copy all content into local_text_object_repository.dart.
 import 'dart:convert';
 
 import '../../../../core/persistence/key_value_store.dart';
@@ -19,6 +18,26 @@ final class LocalTextObjectRepository implements TextObjectRepository {
       ..sort((first, second) {
         return first.createdAt.compareTo(second.createdAt);
       });
+  }
+
+  @override
+  Future<List<TextObject>> search(String query) async {
+    final normalizedQuery = query.trim().toLowerCase();
+
+    if (normalizedQuery.isEmpty) {
+      return const [];
+    }
+
+    final objects = await _readAll();
+    final matches = objects.where((object) {
+      return object.plainText.toLowerCase().contains(normalizedQuery);
+    }).toList();
+
+    matches.sort((first, second) {
+      return second.updatedAt.compareTo(first.updatedAt);
+    });
+
+    return matches;
   }
 
   @override

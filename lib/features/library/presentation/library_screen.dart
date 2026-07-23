@@ -1,10 +1,15 @@
 import 'package:kumo_note/features/page/presentation/screens/notebook_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kumo_note/features/drawing/presentation/screens/page_editor_screen.dart';
 import 'package:kumo_note/features/library/application/providers/library_providers.dart';
 import 'package:kumo_note/features/library/domain/entities/notebook.dart';
 import 'package:kumo_note/features/library/presentation/widgets/notebook_card.dart';
 import 'package:kumo_note/features/library/presentation/trash_screen.dart';
+import 'package:kumo_note/features/pdf/presentation/screens/pdf_document_screen.dart';
+import 'package:kumo_note/features/search/application/providers/search_providers.dart';
+import 'package:kumo_note/features/search/domain/entities/library_search_result.dart';
+import 'package:kumo_note/features/search/domain/entities/pdf_file_search_result.dart';
 import 'package:kumo_note/l10n/app_localizations.dart';
 
 class LibraryScreen extends ConsumerWidget {
@@ -391,7 +396,7 @@ class _LibraryNavigation extends StatelessWidget {
   }
 }
 
-class _LibraryContent extends StatelessWidget {
+class _LibraryContent extends ConsumerStatefulWidget {
   const _LibraryContent({
     required this.strings,
     required this.notebooks,
@@ -411,10 +416,34 @@ class _LibraryContent extends StatelessWidget {
   final VoidCallback onRetry;
 
   @override
+  ConsumerState<_LibraryContent> createState() {
+    return _LibraryContentState();
+  }
+}
+
+class _LibraryContentState extends ConsumerState<_LibraryContent> {
+  final TextEditingController _searchController = TextEditingController();
+
+  String _searchQuery = '';
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final screenWidth = MediaQuery.sizeOf(context).width;
     final horizontalPadding = screenWidth >= 900 ? 48.0 : 20.0;
+    final normalizedQuery = _searchQuery.trim();
+    final textResults = normalizedQuery.isEmpty
+        ? null
+        : ref.watch(libraryTextSearchProvider(normalizedQuery));
+    final pdfResults = normalizedQuery.isEmpty
+        ? null
+        : ref.watch(libraryPdfFileSearchProvider(normalizedQuery));
 
     return CustomScrollView(
       slivers: [
@@ -441,12 +470,12 @@ class _LibraryContent extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            strings.welcomeBack,
+                            widget.strings.welcomeBack,
                             style: theme.textTheme.headlineMedium,
                           ),
                           const SizedBox(height: 6),
                           Text(
-                            strings.captureThought,
+                            widget.strings.captureThought,
                             style: theme.textTheme.bodyLarge?.copyWith(
                               color: theme.colorScheme.onSurfaceVariant,
                             ),
@@ -455,7 +484,7 @@ class _LibraryContent extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: strings.settings,
+                      tooltip: widget.strings.settings,
                       onPressed: () {},
                       icon: const Icon(Icons.tune_rounded),
                     ),
@@ -463,18 +492,35 @@ class _LibraryContent extends StatelessWidget {
                 ),
                 const SizedBox(height: 28),
                 TextField(
+                  controller: _searchController,
+                  textInputAction: TextInputAction.search,
                   decoration: InputDecoration(
-                    hintText: strings.search,
+                    hintText: widget.strings.search,
                     prefixIcon: const Icon(Icons.search_rounded),
+                    suffixIcon: _searchQuery.isEmpty
+                        ? null
+                        : IconButton(
+                            tooltip: widget.strings.cancel,
+                            onPressed: _clearSearch,
+                            icon: const Icon(Icons.close_rounded),
+                          ),
                   ),
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
                 ),
                 const SizedBox(height: 24),
                 _QuickActions(
-                  strings: strings,
-                  onCreateNotebook: onCreateNotebook,
+                  strings: widget.strings,
+                  onCreateNotebook: widget.onCreateNotebook,
                 ),
                 const SizedBox(height: 40),
-                Text(strings.allNotebooks, style: theme.textTheme.titleLarge),
+                Text(
+                  widget.strings.allNotebooks,
+                  style: theme.textTheme.titleLarge,
+                ),
                 const SizedBox(height: 16),
               ],
             ),
@@ -488,29 +534,333 @@ class _LibraryContent extends StatelessWidget {
             40,
           ),
           sliver: SliverToBoxAdapter(
-            child: notebooks.when(
+            child: widget.notebooks.when(
               data: (items) {
-                if (items.isEmpty) {
-                  return _EmptyLibrary(strings: strings);
+                if (items.isEmpty && normalizedQuery.isEmpty) {
+                  return _EmptyLibrary(strings: widget.strings);
                 }
 
-                return _NotebookGrid(
-                  notebooks: items,
-                  onRenameNotebook: onRenameNotebook,
-                  onToggleFavorite: onToggleFavorite,
-                  onMoveToTrash: onMoveToTrash,
+                final filteredItems = _filterNotebooks(items);
+
+                if (normalizedQuery.isEmpty) {
+                  return _NotebookGrid(
+                    notebooks: filteredItems,
+                    onRenameNotebook: widget.onRenameNotebook,
+                    onToggleFavorite: widget.onToggleFavorite,
+                    onMoveToTrash: widget.onMoveToTrash,
+                  );
+                }
+
+                return _CombinedSearchResults(
+                  query: normalizedQuery,
+                  notebooks: filteredItems,
+                  textResults:
+                      textResults ??
+                      const AsyncData<List<LibrarySearchResult>>([]),
+                  pdfResults:
+                      pdfResults ??
+                      const AsyncData<List<PdfFileSearchResult>>([]),
+                  strings: widget.strings,
+                  onRenameNotebook: widget.onRenameNotebook,
+                  onToggleFavorite: widget.onToggleFavorite,
+                  onMoveToTrash: widget.onMoveToTrash,
                 );
               },
               loading: () {
-                return _LoadingLibrary(strings: strings);
+                return _LoadingLibrary(strings: widget.strings);
               },
               error: (error, stackTrace) {
-                return _LibraryError(strings: strings, onRetry: onRetry);
+                return _LibraryError(
+                  strings: widget.strings,
+                  onRetry: widget.onRetry,
+                );
               },
             ),
           ),
         ),
       ],
+    );
+  }
+
+  List<Notebook> _filterNotebooks(List<Notebook> notebooks) {
+    final normalizedQuery = _searchQuery.trim().toLowerCase();
+
+    if (normalizedQuery.isEmpty) {
+      return notebooks;
+    }
+
+    return notebooks
+        .where((notebook) {
+          return notebook.title.toLowerCase().contains(normalizedQuery);
+        })
+        .toList(growable: false);
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+
+    setState(() {
+      _searchQuery = '';
+    });
+  }
+}
+
+class _CombinedSearchResults extends StatelessWidget {
+  const _CombinedSearchResults({
+    required this.query,
+    required this.notebooks,
+    required this.textResults,
+    required this.pdfResults,
+    required this.strings,
+    required this.onRenameNotebook,
+    required this.onToggleFavorite,
+    required this.onMoveToTrash,
+  });
+
+  final String query;
+  final List<Notebook> notebooks;
+  final AsyncValue<List<LibrarySearchResult>> textResults;
+  final AsyncValue<List<PdfFileSearchResult>> pdfResults;
+  final AppLocalizations strings;
+  final ValueChanged<Notebook> onRenameNotebook;
+  final ValueChanged<Notebook> onToggleFavorite;
+  final ValueChanged<Notebook> onMoveToTrash;
+
+  @override
+  Widget build(BuildContext context) {
+    return textResults.when(
+      loading: () => _buildLoading(context),
+      error: (_, _) => _buildError(context),
+      data: (insideResults) {
+        return pdfResults.when(
+          loading: () => _buildLoading(context),
+          error: (_, _) => _buildError(context),
+          data: (pdfFileResults) {
+            if (notebooks.isEmpty &&
+                insideResults.isEmpty &&
+                pdfFileResults.isEmpty) {
+              return _EmptySearchResult(
+                query: query,
+                searchLabel: strings.search,
+              );
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (notebooks.isNotEmpty)
+                  _NotebookGrid(
+                    notebooks: notebooks,
+                    onRenameNotebook: onRenameNotebook,
+                    onToggleFavorite: onToggleFavorite,
+                    onMoveToTrash: onMoveToTrash,
+                  ),
+                if (notebooks.isNotEmpty &&
+                    (pdfFileResults.isNotEmpty || insideResults.isNotEmpty))
+                  const SizedBox(height: 28),
+                if (pdfFileResults.isNotEmpty) ...[
+                  _SearchSectionTitle(
+                    icon: Icons.picture_as_pdf_outlined,
+                    label: strings.pdfDocument,
+                  ),
+                  const SizedBox(height: 10),
+                  for (final result in pdfFileResults)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _PdfSearchResultTile(
+                        result: result,
+                        pageCountLabel: strings.pdfPageCount(result.pageCount),
+                      ),
+                    ),
+                ],
+                if (pdfFileResults.isNotEmpty && insideResults.isNotEmpty)
+                  const SizedBox(height: 20),
+                if (insideResults.isNotEmpty) ...[
+                  _SearchSectionTitle(
+                    icon: Icons.text_snippet_outlined,
+                    label: strings.textTool,
+                  ),
+                  const SizedBox(height: 10),
+                  for (final result in insideResults)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: _InsideSearchResultTile(result: result),
+                    ),
+                ],
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildLoading(BuildContext context) {
+    return Column(
+      children: [
+        if (notebooks.isNotEmpty)
+          _NotebookGrid(
+            notebooks: notebooks,
+            onRenameNotebook: onRenameNotebook,
+            onToggleFavorite: onToggleFavorite,
+            onMoveToTrash: onMoveToTrash,
+          ),
+        const Padding(
+          padding: EdgeInsets.symmetric(vertical: 28),
+          child: LinearProgressIndicator(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildError(BuildContext context) {
+    if (notebooks.isEmpty) {
+      return _EmptySearchResult(query: query, searchLabel: strings.search);
+    }
+
+    return _NotebookGrid(
+      notebooks: notebooks,
+      onRenameNotebook: onRenameNotebook,
+      onToggleFavorite: onToggleFavorite,
+      onMoveToTrash: onMoveToTrash,
+    );
+  }
+}
+
+class _SearchSectionTitle extends StatelessWidget {
+  const _SearchSectionTitle({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(label, style: Theme.of(context).textTheme.titleMedium),
+      ],
+    );
+  }
+}
+
+class _PdfSearchResultTile extends StatelessWidget {
+  const _PdfSearchResultTile({
+    required this.result,
+    required this.pageCountLabel,
+  });
+
+  final PdfFileSearchResult result;
+  final String pageCountLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(
+          Icons.picture_as_pdf_outlined,
+          color: colorScheme.primary,
+        ),
+        title: Text(
+          result.document.fileName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          '${result.notebook.title} • $pageCountLabel',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) {
+                return PdfDocumentScreen(
+                  document: result.document,
+                  pages: result.pages,
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _InsideSearchResultTile extends StatelessWidget {
+  const _InsideSearchResultTile({required this.result});
+
+  final LibrarySearchResult result;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(Icons.notes_rounded, color: colorScheme.primary),
+        title: Text(
+          result.matchedText,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        subtitle: Text(
+          '${result.notebook.title} • ${result.pageNumber}',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: const Icon(Icons.chevron_right_rounded),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute<void>(
+              builder: (context) {
+                return PageEditorScreen(
+                  page: result.page,
+                  pageNumber: result.pageNumber,
+                );
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _EmptySearchResult extends StatelessWidget {
+  const _EmptySearchResult({required this.query, required this.searchLabel});
+
+  final String query;
+  final String searchLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 56),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search_off_rounded, size: 48, color: colorScheme.outline),
+          const SizedBox(height: 12),
+          Text(searchLabel, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(
+            '"$query"',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

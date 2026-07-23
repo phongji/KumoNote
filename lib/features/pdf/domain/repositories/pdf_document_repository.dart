@@ -5,6 +5,8 @@ import '../entities/pdf_document_entity.dart';
 abstract interface class PdfDocumentRepository {
   Future<List<PdfDocumentEntity>> getByNotebookId(String notebookId);
 
+  Future<List<PdfDocumentEntity>> searchByFileName(String query);
+
   Future<PdfDocumentEntity?> getById(String documentId);
 
   Future<Uint8List?> readBytes(String storageKey);
