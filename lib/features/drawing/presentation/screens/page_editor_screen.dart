@@ -411,6 +411,8 @@ final class PageEditorScreen extends ConsumerWidget {
                             pageId: page.id,
                             template: page.template,
                             paperColor: page.paperColor,
+                            pdfDocumentId: page.pdfDocumentId,
+                            pdfPageNumber: page.pdfPageNumber,
                           ),
                         ),
                       ),

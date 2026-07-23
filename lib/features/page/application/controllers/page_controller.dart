@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../pdf/application/pdf_providers.dart';
+import '../../../pdf/application/use_cases/import_pdf_to_notebook.dart';
 import '../../domain/entities/note_page.dart';
 import '../providers/page_providers.dart';
 
@@ -35,8 +37,42 @@ final class PageController {
     return page;
   }
 
+  Future<PdfNotebookImportResult?> importPdf() async {
+    final importedPdf = await _ref.read(pdfImportServiceProvider).pickPdf();
+
+    if (importedPdf == null) {
+      return null;
+    }
+
+    final result = await _ref
+        .read(importPdfToNotebookProvider)
+        .call(notebookId: notebookId, importedPdf: importedPdf);
+
+    _ref.invalidate(pdfDocumentListProvider(notebookId));
+    _refreshLists();
+
+    return result;
+  }
+
   Future<void> moveToTrash(String pageId) async {
     await _ref.read(movePageToTrashProvider).call(pageId);
+    _refreshLists();
+  }
+
+  Future<void> movePdfToTrash(String documentId) async {
+    final repository = _ref.read(pageRepositoryProvider);
+    final activePages = await repository.getActivePages(notebookId);
+    final now = DateTime.now().toUtc();
+    final pdfPages = activePages
+        .where((page) => page.pdfDocumentId == documentId)
+        .map((page) => page.moveToTrash(now: now))
+        .toList(growable: false);
+
+    if (pdfPages.isEmpty) {
+      return;
+    }
+
+    await repository.saveAll(pdfPages);
     _refreshLists();
   }
 

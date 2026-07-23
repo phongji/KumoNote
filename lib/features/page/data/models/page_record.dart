@@ -16,6 +16,8 @@ final class PageRecord {
     this.sectionId,
     this.deletedAt,
     this.thumbnailPath,
+    this.pdfDocumentId,
+    this.pdfPageNumber,
   });
 
   final String id;
@@ -32,6 +34,8 @@ final class PageRecord {
   final double width;
   final double height;
   final String? thumbnailPath;
+  final String? pdfDocumentId;
+  final int? pdfPageNumber;
 
   factory PageRecord.fromDomain(NotePage page) {
     return PageRecord(
@@ -49,6 +53,8 @@ final class PageRecord {
       width: page.width,
       height: page.height,
       thumbnailPath: page.thumbnailPath,
+      pdfDocumentId: page.pdfDocumentId,
+      pdfPageNumber: page.pdfPageNumber,
     );
   }
 
@@ -60,8 +66,8 @@ final class PageRecord {
       createdAt: json['createdAt']! as String,
       updatedAt: json['updatedAt']! as String,
       deletedAt: json['deletedAt'] as String?,
-      version: json['version']! as int,
-      sortOrder: json['sortOrder']! as int,
+      version: (json['version']! as num).toInt(),
+      sortOrder: (json['sortOrder']! as num).toInt(),
       orientation: json['orientation']! as String,
       template: json['template']! as String,
       paperColor:
@@ -69,6 +75,8 @@ final class PageRecord {
       width: (json['width']! as num).toDouble(),
       height: (json['height']! as num).toDouble(),
       thumbnailPath: json['thumbnailPath'] as String?,
+      pdfDocumentId: json['pdfDocumentId'] as String?,
+      pdfPageNumber: (json['pdfPageNumber'] as num?)?.toInt(),
     );
   }
 
@@ -90,6 +98,8 @@ final class PageRecord {
       width: width,
       height: height,
       thumbnailPath: thumbnailPath,
+      pdfDocumentId: pdfDocumentId,
+      pdfPageNumber: pdfPageNumber,
     );
   }
 
@@ -109,6 +119,8 @@ final class PageRecord {
       'width': width,
       'height': height,
       'thumbnailPath': thumbnailPath,
+      'pdfDocumentId': pdfDocumentId,
+      'pdfPageNumber': pdfPageNumber,
     };
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../page/domain/entities/note_page.dart';
 import '../../../page/presentation/painters/paper_template_painter.dart';
+import '../../../pdf/presentation/widgets/pdf_page_background.dart';
 import '../../application/controllers/drawing_controller.dart';
 import '../painters/ink_painter.dart';
 import '../painters/selection_overlay_painter.dart';
@@ -17,12 +18,19 @@ final class DrawingCanvas extends ConsumerStatefulWidget {
     required this.pageId,
     this.template = PageTemplate.blank,
     this.paperColor = PagePaperColor.paperWhite,
+    this.pdfDocumentId,
+    this.pdfPageNumber,
     super.key,
-  });
+  }) : assert(
+         (pdfDocumentId == null && pdfPageNumber == null) ||
+             (pdfDocumentId != null && pdfPageNumber != null),
+       );
 
   final String pageId;
   final PageTemplate template;
   final PagePaperColor paperColor;
+  final String? pdfDocumentId;
+  final int? pdfPageNumber;
 
   @override
   ConsumerState<DrawingCanvas> createState() => _DrawingCanvasState();
@@ -171,14 +179,20 @@ final class _DrawingCanvasState extends ConsumerState<DrawingCanvas> {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  CustomPaint(
-                    painter: PaperTemplatePainter(
-                      template: widget.template,
-                      lineColor: const Color(
-                        0xFF7D8583,
-                      ).withValues(alpha: 0.34),
+                  if (widget.pdfDocumentId case final documentId?)
+                    PdfPageBackground(
+                      documentId: documentId,
+                      pageNumber: widget.pdfPageNumber!,
+                    )
+                  else
+                    CustomPaint(
+                      painter: PaperTemplatePainter(
+                        template: widget.template,
+                        lineColor: const Color(
+                          0xFF7D8583,
+                        ).withValues(alpha: 0.34),
+                      ),
                     ),
-                  ),
                   SceneObjectLayer(
                     pageId: widget.pageId,
                     strokes: state.strokes,

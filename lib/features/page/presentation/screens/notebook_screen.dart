@@ -1,14 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../drawing/presentation/screens/page_editor_screen.dart';
+import '../../../pdf/application/pdf_providers.dart';
 import '../../application/controllers/page_controller.dart' as page_app;
 import '../../application/providers/page_providers.dart';
-import '../widgets/page_card.dart';
+import '../widgets/notebook_contents.dart';
 import '../widgets/page_setup_dialog.dart';
 import 'page_trash_screen.dart';
 
-final class NotebookScreen extends ConsumerWidget {
+final class NotebookScreen extends ConsumerStatefulWidget {
   const NotebookScreen({
     required this.notebookId,
     required this.notebookName,
@@ -19,20 +21,45 @@ final class NotebookScreen extends ConsumerWidget {
   final String notebookName;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final pages = ref.watch(activePageListProvider(notebookId));
-    final controller = ref.read(page_app.pageControllerProvider(notebookId));
+  ConsumerState<NotebookScreen> createState() => _NotebookScreenState();
+}
+
+final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
+  bool _isImportingPdf = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final pages = ref.watch(activePageListProvider(widget.notebookId));
+    final documents = ref.watch(pdfDocumentListProvider(widget.notebookId));
+    final controller = ref.read(
+      page_app.pageControllerProvider(widget.notebookId),
+    );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(notebookName),
+        title: Text(widget.notebookName),
         actions: [
           IconButton(
+            tooltip: 'Import PDF',
+            onPressed: _isImportingPdf
+                ? null
+                : () async {
+                    await _importPdf(controller);
+                  },
+            icon: _isImportingPdf
+                ? const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.picture_as_pdf_outlined),
+          ),
+          IconButton(
+            tooltip: 'Trash',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (context) {
-                    return PageTrashScreen(notebookId: notebookId);
+                    return PageTrashScreen(notebookId: widget.notebookId);
                   },
                 ),
               );
@@ -40,6 +67,7 @@ final class NotebookScreen extends ConsumerWidget {
             icon: const Icon(Icons.delete_outline),
           ),
           IconButton(
+            tooltip: 'Create page',
             onPressed: () async {
               await _createPageWithSetup(
                 context: context,
@@ -51,87 +79,75 @@ final class NotebookScreen extends ConsumerWidget {
           const SizedBox(width: 8),
         ],
       ),
-      body: pages.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, _) => Center(
-          child: IconButton.filledTonal(
-            onPressed: controller.reload,
-            icon: const Icon(Icons.refresh),
-          ),
-        ),
-        data: (items) {
-          if (items.isEmpty) {
-            return Center(
-              child: IconButton.filled(
-                onPressed: () async {
-                  await _createPageWithSetup(
-                    context: context,
-                    controller: controller,
-                  );
-                },
-                iconSize: 36,
-                padding: const EdgeInsets.all(24),
-                icon: const Icon(Icons.note_add_outlined),
-              ),
-            );
-          }
-
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              final columnCount = switch (constraints.maxWidth) {
-                >= 1200 => 5,
-                >= 900 => 4,
-                >= 600 => 3,
-                >= 360 => 2,
-                _ => 1,
-              };
-
-              return GridView.builder(
-                padding: const EdgeInsets.all(24),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: columnCount,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                  childAspectRatio: 0.72,
-                ),
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final page = items[index];
-                  final pageNumber = page.sortOrder ~/ 1000;
-
-                  return PageCard(
-                    key: ValueKey(page.id),
-                    page: page,
-                    pageNumber: pageNumber,
-                    onOpen: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (context) {
-                            return PageEditorScreen(
-                              page: page,
-                              pageNumber: pageNumber,
-                            );
-                          },
-                        ),
-                      );
-                    },
-                    onMoveToTrash: () {
-                      controller.moveToTrash(page.id);
-                    },
-                  );
-                },
-              );
-            },
+      body: NotebookContents(
+        pages: pages,
+        documents: documents,
+        controller: controller,
+        isImportingPdf: _isImportingPdf,
+        onCreatePage: () {
+          unawaited(
+            _createPageWithSetup(context: context, controller: controller),
           );
+        },
+        onImportPdf: () {
+          unawaited(_importPdf(controller));
         },
       ),
       floatingActionButton: FloatingActionButton(
+        tooltip: 'Create page',
         onPressed: () async {
           await _createPageWithSetup(context: context, controller: controller);
         },
         child: const Icon(Icons.add),
       ),
     );
+  }
+
+  Future<void> _importPdf(page_app.PageController controller) async {
+    if (_isImportingPdf) {
+      return;
+    }
+
+    setState(() {
+      _isImportingPdf = true;
+    });
+
+    try {
+      final result = await controller.importPdf();
+
+      if (!mounted || result == null) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              'Added ${result.pages.length} pages from ${result.document.fileName}',
+            ),
+          ),
+        );
+    } catch (error, stackTrace) {
+      debugPrint('PDF IMPORT ERROR: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(content: Text('This PDF could not be imported.')),
+        );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isImportingPdf = false;
+        });
+      }
+    }
   }
 
   Future<void> _createPageWithSetup({
