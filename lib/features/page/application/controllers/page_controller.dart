@@ -81,12 +81,47 @@ final class PageController {
     _refreshLists();
   }
 
+  Future<void> restorePdf(String documentId) async {
+    final repository = _ref.read(pageRepositoryProvider);
+    final deletedPages = await repository.getDeletedPages(notebookId);
+    final now = DateTime.now().toUtc();
+    final restoredPages = deletedPages
+        .where((page) => page.pdfDocumentId == documentId)
+        .map((page) => page.restore(now: now))
+        .toList(growable: false);
+
+    if (restoredPages.isEmpty) {
+      return;
+    }
+
+    await repository.saveAll(restoredPages);
+    _refreshLists();
+  }
+
   Future<void> deleteForever(String pageId) async {
     await _ref.read(deletePageForeverProvider).call(pageId);
     _refreshLists();
   }
 
+  Future<void> deletePdfForever(String documentId) async {
+    final pageRepository = _ref.read(pageRepositoryProvider);
+    final deletedPages = await pageRepository.getDeletedPages(notebookId);
+    final pageIds = deletedPages
+        .where((page) => page.pdfDocumentId == documentId)
+        .map((page) => page.id)
+        .toList(growable: false);
+
+    for (final pageId in pageIds) {
+      await pageRepository.purge(pageId);
+    }
+
+    await _ref.read(pdfDocumentRepositoryProvider).delete(documentId);
+    _ref.invalidate(pdfDocumentListProvider(notebookId));
+    _refreshLists();
+  }
+
   void reload() {
+    _ref.invalidate(pdfDocumentListProvider(notebookId));
     _refreshLists();
   }
 
