@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/note_page.dart';
-import '../painters/paper_template_painter.dart';
+import 'page_content_preview.dart';
 
 final class PageCard extends StatelessWidget {
   const PageCard({
@@ -19,8 +19,6 @@ final class PageCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -28,31 +26,7 @@ final class PageCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              child: ColoredBox(
-                color: Color(page.paperColor.colorValue),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    CustomPaint(
-                      painter: PaperTemplatePainter(
-                        template: page.template,
-                        lineColor: const Color(
-                          0xFF7D8583,
-                        ).withValues(alpha: 0.34),
-                      ),
-                    ),
-                    Center(
-                      child: Icon(
-                        Icons.description_outlined,
-                        size: 42,
-                        color: colorScheme.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            Expanded(child: PageContentPreview(page: page)),
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
               child: Row(

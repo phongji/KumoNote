@@ -1,3 +1,5 @@
+import 'package:kumo_note/features/backup/application/providers/backup_providers.dart';
+import 'package:kumo_note/features/backup/presentation/widgets/native_backup_preview_dialog.dart';
 import 'package:kumo_note/features/page/presentation/screens/notebook_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -425,6 +427,7 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
   final TextEditingController _searchController = TextEditingController();
 
   String _searchQuery = '';
+  bool _isRestoringBackup = false;
 
   @override
   void dispose() {
@@ -518,6 +521,8 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
                 _QuickActions(
                   strings: widget.strings,
                   onCreateNotebook: widget.onCreateNotebook,
+                  isRestoringBackup: _isRestoringBackup,
+                  onRestoreBackup: _isRestoringBackup ? null : _restoreBackup,
                 ),
                 const SizedBox(height: 40),
                 Text(
@@ -608,6 +613,84 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
     setState(() {
       _searchQuery = '';
     });
+  }
+
+  Future<void> _restoreBackup() async {
+    if (_isRestoringBackup) {
+      return;
+    }
+
+    final isThai = Localizations.localeOf(context).languageCode == 'th';
+
+    setState(() {
+      _isRestoringBackup = true;
+    });
+
+    try {
+      final preview = await ref
+          .read(nativeBackupInspectorProvider)
+          .pickAndInspect();
+
+      if (!mounted || preview == null) {
+        return;
+      }
+
+      final restoredTitle = await showNativeBackupPreviewDialog(
+        context: context,
+        preview: preview,
+      );
+
+      if (!mounted || restoredTitle == null) {
+        return;
+      }
+
+      final restoredNotebook = await ref
+          .read(nativeRestoreServiceProvider)
+          .restoreAsCopy(preview: preview, restoredTitle: restoredTitle);
+
+      if (!mounted) {
+        return;
+      }
+
+      ref.read(notebookListProvider.notifier).reload();
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              isThai
+                  ? 'คืนสมุด “${restoredNotebook.title}” เรียบร้อยแล้ว'
+                  : 'Restored “${restoredNotebook.title}”.',
+            ),
+          ),
+        );
+    } catch (error, stackTrace) {
+      debugPrint('NATIVE RESTORE ERROR: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) {
+        return;
+      }
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              isThai
+                  ? 'ยังคืนข้อมูลจากไฟล์นี้ไม่ได้'
+                  : 'This backup could not be restored.',
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isRestoringBackup = false;
+        });
+      }
+    }
   }
 }
 
@@ -912,10 +995,17 @@ class _EmptySearchResult extends StatelessWidget {
 }
 
 class _QuickActions extends StatelessWidget {
-  const _QuickActions({required this.strings, required this.onCreateNotebook});
+  const _QuickActions({
+    required this.strings,
+    required this.onCreateNotebook,
+    required this.isRestoringBackup,
+    required this.onRestoreBackup,
+  });
 
   final AppLocalizations strings;
   final VoidCallback onCreateNotebook;
+  final bool isRestoringBackup;
+  final VoidCallback? onRestoreBackup;
 
   @override
   Widget build(BuildContext context) {
@@ -937,6 +1027,20 @@ class _QuickActions extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
+          ),
+        ),
+        OutlinedButton.icon(
+          onPressed: onRestoreBackup,
+          icon: isRestoringBackup
+              ? const SizedBox.square(
+                  dimension: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.settings_backup_restore_rounded),
+          label: Text(
+            Localizations.localeOf(context).languageCode == 'th'
+                ? 'คืนจากไฟล์สำรอง'
+                : 'Restore backup',
           ),
         ),
       ],

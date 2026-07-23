@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../l10n/app_localizations.dart';
+import '../../../backup/application/providers/backup_providers.dart';
 import '../../../export/application/providers/export_providers.dart';
 import '../../../page/domain/entities/note_page.dart';
 import '../../../pdf/application/pdf_providers.dart';
@@ -13,7 +14,7 @@ import '../widgets/notebook_contents.dart';
 import '../widgets/page_setup_dialog.dart';
 import 'page_trash_screen.dart';
 
-enum _NotebookFileAction { importPdf, exportPdf }
+enum _NotebookFileAction { importPdf, exportPdf, backup }
 
 final class NotebookScreen extends ConsumerStatefulWidget {
   const NotebookScreen({
@@ -34,10 +35,14 @@ final class NotebookScreen extends ConsumerStatefulWidget {
 final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
   bool _isImportingPdf = false;
   bool _isExportingPdf = false;
+  bool _isBackingUp = false;
+  String? _backupStage;
   int _exportedPageCount = 0;
   int _exportTotalPageCount = 0;
 
-  bool get _isHandlingFile => _isImportingPdf || _isExportingPdf;
+  bool get _isHandlingFile {
+    return _isImportingPdf || _isExportingPdf || _isBackingUp;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,6 +74,12 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
                       '$_exportedPageCount/$_exportTotalPageCount',
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
+                  ] else if (_isBackingUp) ...[
+                    const SizedBox(width: 8),
+                    Text(
+                      _backupStageLabel(context),
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
                   ],
                 ],
               ),
@@ -84,6 +95,9 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
                     break;
                   case _NotebookFileAction.exportPdf:
                     unawaited(_exportPdf(pageItems));
+                    break;
+                  case _NotebookFileAction.backup:
+                    unawaited(_createBackup());
                     break;
                 }
               },
@@ -107,6 +121,18 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
                       contentPadding: EdgeInsets.zero,
                       leading: const Icon(Icons.ios_share_outlined),
                       title: Text(isThai ? 'ส่งออกเป็น PDF' : 'Export as PDF'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: _NotebookFileAction.backup,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.inventory_2_outlined),
+                      title: Text(
+                        isThai
+                            ? 'สำรองสมุด (.kumo)'
+                            : 'Back up notebook (.kumo)',
+                      ),
                     ),
                   ),
                 ];
@@ -270,6 +296,75 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
         });
       }
     }
+  }
+
+  Future<void> _createBackup() async {
+    if (_isHandlingFile) {
+      return;
+    }
+
+    setState(() {
+      _isBackingUp = true;
+      _backupStage = 'snapshot';
+    });
+
+    try {
+      await ref
+          .read(nativeBackupServiceProvider)
+          .createNotebookBackup(
+            notebookId: widget.notebookId,
+            onStageChanged: (stage) {
+              if (!mounted) {
+                return;
+              }
+
+              setState(() {
+                _backupStage = stage;
+              });
+            },
+          );
+    } catch (error, stackTrace) {
+      debugPrint('NATIVE BACKUP ERROR: $error');
+      debugPrintStack(stackTrace: stackTrace);
+
+      if (!mounted) {
+        return;
+      }
+
+      final isThai = Localizations.localeOf(context).languageCode == 'th';
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(
+              isThai
+                  ? 'ยังสำรองสมุดนี้ไม่ได้ กรุณาลองอีกครั้ง'
+                  : 'This notebook could not be backed up. Please try again.',
+            ),
+          ),
+        );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isBackingUp = false;
+          _backupStage = null;
+        });
+      }
+    }
+  }
+
+  String _backupStageLabel(BuildContext context) {
+    final isThai = Localizations.localeOf(context).languageCode == 'th';
+
+    return switch (_backupStage) {
+      'snapshot' => isThai ? 'รวบรวมข้อมูล…' : 'Collecting…',
+      'assets' => isThai ? 'รวบรวมไฟล์…' : 'Collecting files…',
+      'integrity' => isThai ? 'ตรวจความสมบูรณ์…' : 'Checking…',
+      'archive' => isThai ? 'สร้างแพ็กเกจ…' : 'Packaging…',
+      'share' => isThai ? 'เตรียมบันทึก…' : 'Preparing…',
+      _ => isThai ? 'กำลังสำรอง…' : 'Backing up…',
+    };
   }
 
   Future<void> _createPageWithSetup({

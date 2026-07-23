@@ -164,6 +164,7 @@ final class _NotebookGrid extends StatelessWidget {
             return PdfDocumentCard(
               key: ValueKey(document.id),
               document: document,
+              firstPage: entry.pdfPages.first,
               onOpen: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(

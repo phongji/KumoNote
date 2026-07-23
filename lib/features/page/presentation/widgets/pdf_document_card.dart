@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 
 import '../../../../l10n/app_localizations.dart';
 import '../../../pdf/domain/entities/pdf_document_entity.dart';
-import '../../../pdf/presentation/widgets/pdf_page_background.dart';
+import '../../domain/entities/note_page.dart';
+import 'page_content_preview.dart';
 
 final class PdfDocumentCard extends StatelessWidget {
   const PdfDocumentCard({
     required this.document,
+    required this.firstPage,
     required this.onOpen,
     required this.onMoveToTrash,
     super.key,
   });
 
   final PdfDocumentEntity document;
+  final NotePage firstPage;
   final VoidCallback onOpen;
   final VoidCallback onMoveToTrash;
 
@@ -30,53 +33,50 @@ final class PdfDocumentCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(
-              child: ColoredBox(
-                color: colorScheme.surface,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    PdfPageBackground(documentId: document.id, pageNumber: 1),
-                    Positioned(
-                      left: 10,
-                      top: 10,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: colorScheme.outlineVariant.withValues(
-                              alpha: 0.7,
-                            ),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 5,
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.picture_as_pdf_outlined,
-                                size: 16,
-                                color: colorScheme.primary,
-                              ),
-                              const SizedBox(width: 5),
-                              Text(
-                                'PDF',
-                                style: textTheme.labelMedium?.copyWith(
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  PageContentPreview(page: firstPage),
+                  Positioned(
+                    left: 10,
+                    top: 10,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: colorScheme.surface.withValues(alpha: 0.9),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: colorScheme.outlineVariant.withValues(
+                            alpha: 0.7,
                           ),
                         ),
                       ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 5,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.picture_as_pdf_outlined,
+                              size: 16,
+                              color: colorScheme.primary,
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              'PDF',
+                              style: textTheme.labelMedium?.copyWith(
+                                color: colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             Padding(
