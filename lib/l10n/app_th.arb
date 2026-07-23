@@ -40,12 +40,12 @@
   "deleteForeverBody": "การลบนี้ย้อนกลับไม่ได้ สมุดและเนื้อหาทั้งหมดจะถูกนำออกถาวร",
   "notebookRestored": "กู้คืนสมุดแล้ว",
 
-  "chooseYourPaper": "เลือกกระดาษที่ใช่",
-  "paperSetupHint": "พื้นที่สงบสำหรับความคิดถัดไปของคุณ",
+  "chooseYourPaper": "เลือกกระดาษของคุณ",
+  "paperSetupHint": "พื้นที่สงบสำหรับความคิดถัดไป",
   "pageDirection": "วางหน้าแบบไหนดี",
   "portrait": "แนวตั้ง",
   "landscape": "แนวนอน",
-  "paperStyle": "ลายกระดาษ",
+  "paperStyle": "รูปแบบกระดาษ",
   "paperTone": "โทนกระดาษ",
   "createPage": "สร้างหน้ากระดาษ",
 
@@ -87,15 +87,39 @@
   "textDialogTitle": "วางถ้อยคำเบา ๆ",
   "textDialogHint": "พิมพ์สิ่งที่อยากเก็บไว้",
   "createText": "วางบนกระดาษ",
-"deleteText": "ลบข้อความ",
-"textEmptyError": "เขียนสักนิดก่อนวางลงบนกระดาษ",
+  "deleteText": "ลบข้อความ",
+  "textEmptyError": "เขียนสักนิดก่อนวางลงบนกระดาษ",
 
-"imageTool": "รูปภาพ",
-"addImage": "วางรูปบนกระดาษ",
-"imageImportFailed": "ยังวางรูปนี้ไม่ได้",
-"imageTooLarge": "เลือกรูปที่มีขนาดไม่เกิน 15 MB",
+  "imageTool": "รูปภาพ",
+  "addImage": "วางรูปบนกระดาษ",
+  "imageImportFailed": "ยังวางรูปนี้ไม่ได้",
+  "imageTooLarge": "เลือกรูปที่มีขนาดไม่เกิน 15 MB",
+  "cropImage": "จัดกรอบรูป",
+  "resetCrop": "คืนกรอบเดิม",
+  "applyCrop": "ใช้กรอบนี้",
 
-"cropImage": "จัดกรอบรูป",
-"resetCrop": "คืนกรอบเดิม",
-"applyCrop": "ใช้กรอบนี้"
+  "importPdf": "นำเข้า PDF",
+  "importingPdf": "กำลังเปิด PDF…",
+  "pdfDocument": "เอกสาร PDF",
+  "pdfPageCount": "{count} หน้า",
+  "@pdfPageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfOpenFailed": "ยังเปิด PDF นี้ไม่ได้",
+  "pdfImportFailed": "ยังนำเข้า PDF นี้ไม่ได้",
+  "pdfImported": "เพิ่ม {count} หน้าจาก {fileName} แล้ว",
+  "@pdfImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "fileName": {
+        "type": "String"
+      }
+    }
+  }
 }

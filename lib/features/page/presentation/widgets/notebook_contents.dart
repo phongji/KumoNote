@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../drawing/presentation/screens/page_editor_screen.dart';
 import '../../../pdf/domain/entities/pdf_document_entity.dart';
 import '../../../pdf/presentation/screens/pdf_document_screen.dart';
@@ -97,6 +98,7 @@ final class NotebookContents extends StatelessWidget {
     entries.sort(
       (first, second) => first.sortOrder.compareTo(second.sortOrder),
     );
+
     return entries;
   }
 }
@@ -198,12 +200,14 @@ final class _EmptyNotebook extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
+
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton.filled(
-            tooltip: 'Create page',
+            tooltip: strings.createPage,
             onPressed: onCreatePage,
             iconSize: 36,
             padding: const EdgeInsets.all(24),
@@ -213,7 +217,9 @@ final class _EmptyNotebook extends StatelessWidget {
           TextButton.icon(
             onPressed: isImportingPdf ? null : onImportPdf,
             icon: const Icon(Icons.picture_as_pdf_outlined),
-            label: Text(isImportingPdf ? 'Importing PDF…' : 'Import PDF'),
+            label: Text(
+              isImportingPdf ? strings.importingPdf : strings.importPdf,
+            ),
           ),
         ],
       ),
@@ -228,8 +234,11 @@ final class _ReloadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
+
     return Center(
       child: IconButton.filledTonal(
+        tooltip: strings.tryAgain,
         onPressed: onPressed,
         icon: const Icon(Icons.refresh),
       ),

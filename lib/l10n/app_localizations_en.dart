@@ -282,4 +282,35 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get applyCrop => 'Apply crop';
+
+  @override
+  String get importPdf => 'Import PDF';
+
+  @override
+  String get importingPdf => 'Opening PDF…';
+
+  @override
+  String get pdfDocument => 'PDF document';
+
+  @override
+  String pdfPageCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pages',
+      one: '1 page',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get pdfOpenFailed => 'This PDF could not be opened';
+
+  @override
+  String get pdfImportFailed => 'This PDF could not be imported';
+
+  @override
+  String pdfImported(int count, String fileName) {
+    return 'Added $count pages from $fileName';
+  }
 }

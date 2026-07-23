@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../drawing/application/controllers/drawing_controller.dart';
 import '../../../drawing/application/state/drawing_state.dart';
 import '../../../drawing/presentation/screens/page_editor_screen.dart';
@@ -35,14 +36,17 @@ final class _PdfDocumentScreenState extends ConsumerState<PdfDocumentScreen> {
 
   List<NotePage> get _orderedPages {
     final pages = [...widget.pages];
+
     pages.sort((first, second) {
       return (first.pdfPageNumber ?? 0).compareTo(second.pdfPageNumber ?? 0);
     });
+
     return pages;
   }
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     final bytes = ref.watch(
       pdfDocumentBytesProvider(widget.document.storageKey),
     );
@@ -58,7 +62,7 @@ final class _PdfDocumentScreenState extends ConsumerState<PdfDocumentScreen> {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              '${widget.document.pageCount} pages',
+              strings.pdfPageCount(widget.document.pageCount),
               style: Theme.of(context).textTheme.labelSmall,
             ),
           ],
@@ -230,6 +234,7 @@ final class _PdfLoadError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Center(
@@ -242,7 +247,7 @@ final class _PdfLoadError extends StatelessWidget {
             color: colorScheme.outline,
           ),
           const SizedBox(height: 10),
-          const Text('This PDF could not be opened.'),
+          Text(strings.pdfOpenFailed),
         ],
       ),
     );

@@ -643,6 +643,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Apply crop'**
   String get applyCrop;
+
+  /// No description provided for @importPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Import PDF'**
+  String get importPdf;
+
+  /// No description provided for @importingPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Opening PDF…'**
+  String get importingPdf;
+
+  /// No description provided for @pdfDocument.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF document'**
+  String get pdfDocument;
+
+  /// No description provided for @pdfPageCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 page} other{{count} pages}}'**
+  String pdfPageCount(int count);
+
+  /// No description provided for @pdfOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF could not be opened'**
+  String get pdfOpenFailed;
+
+  /// No description provided for @pdfImportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'This PDF could not be imported'**
+  String get pdfImportFailed;
+
+  /// No description provided for @pdfImported.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {count} pages from {fileName}'**
+  String pdfImported(int count, String fileName);
 }
 
 class _AppLocalizationsDelegate

@@ -42,7 +42,11 @@ final class PageTrashScreen extends ConsumerWidget {
                 in documents.asData?.value ?? const <PdfDocumentEntity>[])
               document.id: document,
           };
-          final entries = _buildEntries(items, documentMap);
+          final entries = _buildEntries(
+            pages: items,
+            documents: documentMap,
+            strings: strings,
+          );
 
           return ListView.separated(
             padding: const EdgeInsets.all(24),
@@ -103,10 +107,11 @@ final class PageTrashScreen extends ConsumerWidget {
     );
   }
 
-  List<_TrashEntry> _buildEntries(
-    List<NotePage> pages,
-    Map<String, PdfDocumentEntity> documents,
-  ) {
+  List<_TrashEntry> _buildEntries({
+    required List<NotePage> pages,
+    required Map<String, PdfDocumentEntity> documents,
+    required AppLocalizations strings,
+  }) {
     final entries = <_TrashEntry>[];
     final pdfGroups = <String, List<NotePage>>{};
 
@@ -136,8 +141,8 @@ final class PageTrashScreen extends ConsumerWidget {
         _TrashEntry(
           page: groupedPages.first,
           pdfDocumentId: group.key,
-          title: document?.fileName ?? 'PDF document',
-          subtitle: '${groupedPages.length} pages',
+          title: document?.fileName ?? strings.pdfDocument,
+          subtitle: strings.pdfPageCount(groupedPages.length),
         ),
       );
     }

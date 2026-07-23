@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../pdf/domain/entities/pdf_document_entity.dart';
 import '../../../pdf/presentation/widgets/pdf_page_background.dart';
 
@@ -17,6 +18,7 @@ final class PdfDocumentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -93,7 +95,7 @@ final class PdfDocumentCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '${document.pageCount} pages',
+                          strings.pdfPageCount(document.pageCount),
                           style: textTheme.bodySmall?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
@@ -102,7 +104,7 @@ final class PdfDocumentCard extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    tooltip: 'Move to trash',
+                    tooltip: strings.moveToTrash,
                     onPressed: onMoveToTrash,
                     icon: const Icon(Icons.delete_outline),
                   ),

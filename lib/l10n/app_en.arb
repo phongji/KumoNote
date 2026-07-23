@@ -87,15 +87,39 @@
   "textDialogTitle": "A little note",
   "textDialogHint": "Let your words rest here",
   "createText": "Place on paper",
-"deleteText": "Delete text",
-"textEmptyError": "Write something before placing it",
+  "deleteText": "Delete text",
+  "textEmptyError": "Write something before placing it",
 
-"imageTool": "Pictures",
-"addImage": "Place a picture",
-"imageImportFailed": "This picture could not be placed",
-"imageTooLarge": "Choose a picture smaller than 15 MB",
+  "imageTool": "Pictures",
+  "addImage": "Place a picture",
+  "imageImportFailed": "This picture could not be placed",
+  "imageTooLarge": "Choose a picture smaller than 15 MB",
+  "cropImage": "Crop picture",
+  "resetCrop": "Reset",
+  "applyCrop": "Apply crop",
 
-"cropImage": "Crop picture",
-"resetCrop": "Reset",
-"applyCrop": "Apply crop"
-} 
+  "importPdf": "Import PDF",
+  "importingPdf": "Opening PDF…",
+  "pdfDocument": "PDF document",
+  "pdfPageCount": "{count, plural, =1{1 page} other{{count} pages}}",
+  "@pdfPageCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pdfOpenFailed": "This PDF could not be opened",
+  "pdfImportFailed": "This PDF could not be imported",
+  "pdfImported": "Added {count} pages from {fileName}",
+  "@pdfImported": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "fileName": {
+        "type": "String"
+      }
+    }
+  }
+}

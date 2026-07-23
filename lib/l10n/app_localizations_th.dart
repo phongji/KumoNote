@@ -127,10 +127,10 @@ class AppLocalizationsTh extends AppLocalizations {
   String get notebookRestored => 'กู้คืนสมุดแล้ว';
 
   @override
-  String get chooseYourPaper => 'เลือกกระดาษที่ใช่';
+  String get chooseYourPaper => 'เลือกกระดาษของคุณ';
 
   @override
-  String get paperSetupHint => 'พื้นที่สงบสำหรับความคิดถัดไปของคุณ';
+  String get paperSetupHint => 'พื้นที่สงบสำหรับความคิดถัดไป';
 
   @override
   String get pageDirection => 'วางหน้าแบบไหนดี';
@@ -142,7 +142,7 @@ class AppLocalizationsTh extends AppLocalizations {
   String get landscape => 'แนวนอน';
 
   @override
-  String get paperStyle => 'ลายกระดาษ';
+  String get paperStyle => 'รูปแบบกระดาษ';
 
   @override
   String get paperTone => 'โทนกระดาษ';
@@ -281,4 +281,29 @@ class AppLocalizationsTh extends AppLocalizations {
 
   @override
   String get applyCrop => 'ใช้กรอบนี้';
+
+  @override
+  String get importPdf => 'นำเข้า PDF';
+
+  @override
+  String get importingPdf => 'กำลังเปิด PDF…';
+
+  @override
+  String get pdfDocument => 'เอกสาร PDF';
+
+  @override
+  String pdfPageCount(int count) {
+    return '$count หน้า';
+  }
+
+  @override
+  String get pdfOpenFailed => 'ยังเปิด PDF นี้ไม่ได้';
+
+  @override
+  String get pdfImportFailed => 'ยังนำเข้า PDF นี้ไม่ได้';
+
+  @override
+  String pdfImported(int count, String fileName) {
+    return 'เพิ่ม $count หน้าจาก $fileName แล้ว';
+  }
 }

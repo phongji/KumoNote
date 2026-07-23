@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../l10n/app_localizations.dart';
 import '../../../pdf/application/pdf_providers.dart';
 import '../../application/controllers/page_controller.dart' as page_app;
 import '../../application/providers/page_providers.dart';
@@ -21,7 +22,9 @@ final class NotebookScreen extends ConsumerStatefulWidget {
   final String notebookName;
 
   @override
-  ConsumerState<NotebookScreen> createState() => _NotebookScreenState();
+  ConsumerState<NotebookScreen> createState() {
+    return _NotebookScreenState();
+  }
 }
 
 final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
@@ -29,6 +32,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppLocalizations.of(context)!;
     final pages = ref.watch(activePageListProvider(widget.notebookId));
     final documents = ref.watch(pdfDocumentListProvider(widget.notebookId));
     final controller = ref.read(
@@ -40,7 +44,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
         title: Text(widget.notebookName),
         actions: [
           IconButton(
-            tooltip: 'Import PDF',
+            tooltip: strings.importPdf,
             onPressed: _isImportingPdf
                 ? null
                 : () async {
@@ -54,7 +58,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
                 : const Icon(Icons.picture_as_pdf_outlined),
           ),
           IconButton(
-            tooltip: 'Trash',
+            tooltip: strings.trash,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
@@ -67,7 +71,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
             icon: const Icon(Icons.delete_outline),
           ),
           IconButton(
-            tooltip: 'Create page',
+            tooltip: strings.createPage,
             onPressed: () async {
               await _createPageWithSetup(
                 context: context,
@@ -94,7 +98,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Create page',
+        tooltip: strings.createPage,
         onPressed: () async {
           await _createPageWithSetup(context: context, controller: controller);
         },
@@ -107,6 +111,8 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
     if (_isImportingPdf) {
       return;
     }
+
+    final strings = AppLocalizations.of(context)!;
 
     setState(() {
       _isImportingPdf = true;
@@ -124,7 +130,10 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
         ..showSnackBar(
           SnackBar(
             content: Text(
-              'Added ${result.pages.length} pages from ${result.document.fileName}',
+              strings.pdfImported(
+                result.pages.length,
+                result.document.fileName,
+              ),
             ),
           ),
         );
@@ -138,9 +147,7 @@ final class _NotebookScreenState extends ConsumerState<NotebookScreen> {
 
       ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
-        ..showSnackBar(
-          const SnackBar(content: Text('This PDF could not be imported.')),
-        );
+        ..showSnackBar(SnackBar(content: Text(strings.pdfImportFailed)));
     } finally {
       if (mounted) {
         setState(() {
