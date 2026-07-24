@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kumo_note/app/theme/kumo_theme.dart';
 import 'package:kumo_note/features/library/presentation/library_screen.dart';
+import 'package:kumo_note/features/security/presentation/widgets/privacy_cover.dart';
 import 'package:kumo_note/l10n/app_localizations.dart';
 
 class KumoApp extends ConsumerWidget {
@@ -19,6 +20,9 @@ class KumoApp extends ConsumerWidget {
       themeMode: ThemeMode.system,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        return PrivacyCover(child: child ?? const SizedBox.shrink());
+      },
       home: const LibraryScreen(),
     );
   }

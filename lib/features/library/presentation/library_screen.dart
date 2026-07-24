@@ -12,6 +12,7 @@ import 'package:kumo_note/features/pdf/presentation/screens/pdf_document_screen.
 import 'package:kumo_note/features/search/application/providers/search_providers.dart';
 import 'package:kumo_note/features/search/domain/entities/library_search_result.dart';
 import 'package:kumo_note/features/search/domain/entities/pdf_file_search_result.dart';
+import 'package:kumo_note/features/security/presentation/screens/security_settings_screen.dart';
 import 'package:kumo_note/l10n/app_localizations.dart';
 
 class LibraryScreen extends ConsumerWidget {
@@ -353,6 +354,11 @@ class _LibraryNavigation extends StatelessWidget {
           Navigator.of(context).push(
             MaterialPageRoute<void>(builder: (context) => const TrashScreen()),
           );
+          return;
+        }
+
+        if (index == 5) {
+          _openSecuritySettings(context);
         }
       },
       selectedIndex: 0,
@@ -491,7 +497,9 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
                     ),
                     IconButton(
                       tooltip: widget.strings.settings,
-                      onPressed: () {},
+                      onPressed: () {
+                        _openSecuritySettings(context);
+                      },
                       icon: const Icon(Icons.tune_rounded),
                     ),
                   ],
@@ -692,6 +700,14 @@ class _LibraryContentState extends ConsumerState<_LibraryContent> {
       }
     }
   }
+}
+
+void _openSecuritySettings(BuildContext context) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (context) => const SecuritySettingsScreen(),
+    ),
+  );
 }
 
 class _CombinedSearchResults extends StatelessWidget {
