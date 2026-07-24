@@ -50,8 +50,14 @@ final class _PrivacyCoverState extends ConsumerState<PrivacyCover>
       return;
     }
 
+    final isAuthenticating =
+        ref.read(appLockControllerProvider).asData?.value.isAuthenticating ??
+        false;
+
     setState(() {
-      _backgroundedAt ??= DateTime.now();
+      if (!isAuthenticating) {
+        _backgroundedAt ??= DateTime.now();
+      }
       _isLifecycleCovered = true;
     });
   }
